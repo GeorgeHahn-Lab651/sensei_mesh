@@ -35,10 +35,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "app_error.h"
 #include "nrf_gpio.h"
 #include "boards.h"
+#include "leds.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+
 
 #define MESH_ACCESS_ADDR        (0xA541A68F)
 #define MESH_INTERVAL_MIN_MS    (100)
@@ -46,13 +48,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MESH_CLOCK_SRC          (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
 
 
-#define OUTPUT 0x1
-void delay( uint32_t ms );
-void pinMode( uint32_t ulPin, uint32_t ulMode );
-
 /** @brief General error handler. */
 static inline void error_loop(void)
 {
+    toggle_led(LED_RED);
     __disable_irq();
     while (true)
     {
@@ -121,10 +120,7 @@ int main(void)
     SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
     softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
 
-
-    pinMode(LED_1, OUTPUT);
-    pinMode(LED_2, OUTPUT);
-    pinMode(LED_3, OUTPUT);
+    init_leds();
 
 #ifdef RBC_MESH_SERIAL
 
@@ -156,7 +152,6 @@ int main(void)
     rbc_mesh_event_t evt;
     while (true)
     {
-      LEDS_INVERT(1 << LED_2);
       if (rbc_mesh_event_get(&evt) == NRF_SUCCESS)
       {
           rbc_mesh_event_handler(&evt);

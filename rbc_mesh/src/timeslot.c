@@ -39,6 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "transport_control.h"
 #include "event_handler.h"
 #include "rbc_mesh_common.h"
+#include "leds.h"
 
 #ifdef MESH_DFU
 #include "dfu_app.h"
@@ -169,6 +170,7 @@ void start_time_update(void)
 
 static void timeslot_end(void)
 {
+    toggle_led(LED_GREEN);
     radio_disable();
     timer_on_ts_end(timeslot_end_time_get());
     m_is_in_timeslot = false;
@@ -176,7 +178,7 @@ static void timeslot_end(void)
     m_end_timer_triggered = false;
     CLEAR_PIN(PIN_IN_TS);
     CLEAR_PIN(PIN_IN_CB);
-    
+
 #ifdef NRF52
     NRF_TIMER0->TASKS_STOP = 0;
     NRF_TIMER0->TASKS_SHUTDOWN = 1;
@@ -201,6 +203,7 @@ static void timeslot_end(void)
 */
 void timeslot_sd_event_handler(uint32_t evt)
 {
+
     switch (evt)
     {
         case NRF_EVT_RADIO_SESSION_IDLE:
@@ -528,4 +531,3 @@ bool timeslot_is_in_ts(void)
 {
     return m_is_in_timeslot;
 }
-

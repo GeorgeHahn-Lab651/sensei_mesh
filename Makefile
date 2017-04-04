@@ -91,7 +91,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 # source common to all targets
 
-C_SOURCE_FILES += ../main.c
+C_SOURCE_FILES += main.c leds.c
 
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
 	CFLAGS += -D RBC_MESH_SERIAL=1
