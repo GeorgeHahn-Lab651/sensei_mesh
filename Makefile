@@ -19,7 +19,7 @@ USE_DFU              ?= "no"
 SDK_BASE      := /Users/pete/dev/nrf_sdk
 COMPONENTS    := $(SDK_BASE)/components
 TEMPLATE_PATH := $(COMPONENTS)/toolchain/gcc
-SIMBLEE_BASE  := /Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.0
+SIMBLEE_BASE  := /Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2
 RBC_MESH  		:= rbc_mesh
 
 LINKER_SCRIPT := $(SIMBLEE_BASE)/variants/Simblee/linker_scripts/gcc/Simblee.ld
@@ -92,6 +92,9 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 # source common to all targets
 
 C_SOURCE_FILES += main.c leds.c
+CXX_SOURCE_FILES += logger.cpp
+CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
+CXX_SOURCE_FILES += $(SIMBLEE_BASE)/variants/Simblee/variant.cpp
 
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
 	CFLAGS += -D RBC_MESH_SERIAL=1
@@ -131,15 +134,11 @@ C_SOURCE_FILES += $(COMPONENTS)/softdevice/common/softdevice_handler/softdevice_
 
 # assembly files common to all targets
 #ASM_SOURCE_FILES  += $(COMPONENTS)/toolchain/gcc/gcc_startup_nrf51.s
-#--start-group "/var/folders/z_/j1jlqtpx39v4h6vkdy3_mvl80000gn/T/arduino_build_910375/core/syscalls.c.o"
-#"/var/folders/z_/j1jlqtpx39v4h6vkdy3_mvl80000gn/T/arduino_build_910375/libraries/SimbleeBLE/SimbleeBLE.cpp.o"
-#"/var/folders/z_/j1jlqtpx39v4h6vkdy3_mvl80000gn/T/arduino_build_910375/core/variant.cpp.o"
-#/var/folders/z_/j1jlqtpx39v4h6vkdy3_mvl80000gn/T/arduino_build_910375/core/core.a" -Wl,--end-group
 LDFLAGS += -L$(SIMBLEE_BASE)/variants/Simblee
-LIBS += /var/folders/z_/j1jlqtpx39v4h6vkdy3_mvl80000gn/T/arduino_build_910375/libraries/SimbleeBLE/SimbleeBLE.cpp.o
-LIBS += /var/folders/z_/j1jlqtpx39v4h6vkdy3_mvl80000gn/T/arduino_build_910375/core/variant.cpp.o
-LIBS += /var/folders/z_/j1jlqtpx39v4h6vkdy3_mvl80000gn/T/arduino_build_910375/core/core.a
 LIBS += -lSimbleeSystem -lSimblee -lSimbleeBLE -lSimbleeGZLL -lSimbleeForMobile -lSimbleeCOM
+vpath %.c $(C_PATHS)
+
+ARDUINO_CORE = arduino_core/core.a
 
 
 # includes common to all targets
@@ -167,6 +166,12 @@ INC_PATHS += -I$(COMPONENTS)/device
 INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/spi_slave
+
+CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/cores/arduino
+CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/variants/Simblee
+CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/system/Simblee
+CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/system/Simblee/include
+CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/system/CMSIS/CMSIS/Include
 
 OBJECT_DIRECTORY = _build
 LISTING_DIRECTORY = $(OBJECT_DIRECTORY)
@@ -198,6 +203,17 @@ CFLAGS += -ffunction-sections
 CFLAGS += -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin
 
+
+# -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fno-builtin -MMD -mcpu=cortex-m0
+# -DF_CPU=16000000 -DARDUINO=10801 -D__PROJECT__="ledtest.ino" -mthumb -D__Simblee__
+
+CXXFLAGS += -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-rtti
+CXXFLAGS += -fno-exceptions -fno-builtin -MMD -mcpu=cortex-m0 -DF_CPU=16000000
+CXXFLAGS += -DARDUINO=10801 -mthumb -D__Simblee__
+
+#CXX := "$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-g++"
+CXX := "/Users/pete/Library/Arduino15/packages/Simblee/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++"
+
 LDFLAGS += -Xlinker -Map=$(LISTING_DIRECTORY)/$(OUTPUT_NAME).map
 LDFLAGS += -mthumb -mabi=aapcs -L $(TEMPLATE_PATH) -T$(LINKER_SCRIPT)
 LDFLAGS += -mcpu=cortex-m0
@@ -218,6 +234,10 @@ C_SOURCE_FILE_NAMES = $(notdir $(C_SOURCE_FILES))
 C_PATHS = $(call remduplicates, $(dir $(C_SOURCE_FILES) ) )
 C_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(C_SOURCE_FILE_NAMES:.c=.o) )
 
+CXX_SOURCE_FILE_NAMES = $(notdir $(CXX_SOURCE_FILES))
+CXX_PATHS = $(call remduplicates, $(dir $(CXX_SOURCE_FILES) ) )
+CXX_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(CXX_SOURCE_FILE_NAMES:.cpp=.o) )
+
 ASM_SOURCE_FILE_NAMES = $(notdir $(ASM_SOURCE_FILES))
 ASM_PATHS = $(call remduplicates, $(dir $(ASM_SOURCE_FILES) ))
 ASM_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(ASM_SOURCE_FILE_NAMES:.s=.o) )
@@ -227,9 +247,10 @@ TOOLCHAIN_BASE = $(basename $(notdir $(GNU_INSTALL_ROOT)))
 TIMESTAMP := $(shell date +'%s')
 
 vpath %.c $(C_PATHS)
+vpath %.cpp $(CXX_PATHS)
 vpath %.s $(ASM_PATHS)
 
-OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
+OBJECTS = $(CXX_OBJECTS) $(C_OBJECTS) $(ASM_OBJECTS) $(ARDUINO_CORE)
 
 all: $(BUILD_DIRECTORIES) $(OBJECTS)
 	@echo Linking target: $(OUTPUT_NAME).elf
@@ -262,6 +283,12 @@ $(BUILD_DIRECTORIES):
 $(OBJECT_DIRECTORY)/%.o: %.c
 	@echo Compiling file: $(notdir $<)
 	$(NO_ECHO)$(CC) $(CFLAGS) $(INC_PATHS) \
+	-c $< -o $@ > $(OUTPUT_BINARY_DIRECTORY)/$*.lst
+
+# Create objects from C++ SRC files
+$(OBJECT_DIRECTORY)/%.o: %.cpp
+	@echo Compiling file: $(notdir $<)
+	$(NO_ECHO)$(CXX) $(CXXFLAGS) $(CXX_INC_PATHS) \
 	-c $< -o $@ > $(OUTPUT_BINARY_DIRECTORY)/$*.lst
 
 # Assemble files

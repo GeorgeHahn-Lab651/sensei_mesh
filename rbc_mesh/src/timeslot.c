@@ -170,7 +170,6 @@ void start_time_update(void)
 
 static void timeslot_end(void)
 {
-    toggle_led(LED_GREEN);
     radio_disable();
     timer_on_ts_end(timeslot_end_time_get());
     m_is_in_timeslot = false;

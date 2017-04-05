@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "nrf_gpio.h"
 #include "boards.h"
 #include "leds.h"
+#include "logger.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -51,6 +52,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** @brief General error handler. */
 static inline void error_loop(void)
 {
+    logger_print("error");
     toggle_led(LED_RED);
     __disable_irq();
     while (true)
@@ -116,6 +118,10 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
 
 int main(void)
 {
+    logger_init();
+    logger_println("mesh test!");
+
+
     /* Enable Softdevice (including sd_ble before framework */
     SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
     softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
@@ -147,11 +153,14 @@ int main(void)
     APP_ERROR_CHECK(error_code);
     error_code = rbc_mesh_value_enable(2);
     APP_ERROR_CHECK(error_code);
+    error_code = rbc_mesh_value_enable(3);
+    APP_ERROR_CHECK(error_code);
 #endif
 
     rbc_mesh_event_t evt;
     while (true)
     {
+      toggle_led(LED_GREEN);
       if (rbc_mesh_event_get(&evt) == NRF_SUCCESS)
       {
           rbc_mesh_event_handler(&evt);
