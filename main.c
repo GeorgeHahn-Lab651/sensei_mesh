@@ -99,11 +99,17 @@ void HardFault_Handler(void)
 */
 static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
 {
+    toggle_led(LED_GREEN);
+
     switch (p_evt->type)
     {
         case RBC_MESH_EVENT_TYPE_CONFLICTING_VAL:
         case RBC_MESH_EVENT_TYPE_NEW_VAL:
         case RBC_MESH_EVENT_TYPE_UPDATE_VAL:
+          if (p_evt->params.rx.value_handle == 1) {
+            led_config(LED_BLUE, p_evt->params.rx.p_data[0]);
+          }
+          break;
         case RBC_MESH_EVENT_TYPE_TX:
         case RBC_MESH_EVENT_TYPE_INITIALIZED:
         case RBC_MESH_EVENT_TYPE_DFU_NEW_FW_AVAILABLE:
@@ -121,6 +127,8 @@ int main(void)
     logger_init();
     logger_println("mesh test!");
 
+    nrf_gpio_cfg_input(BUTTON_1, NRF_GPIO_PIN_PULLDOWN);
+    nrf_gpio_cfg_input(BUTTON_2, NRF_GPIO_PIN_PULLDOWN);
 
     /* Enable Softdevice (including sd_ble before framework */
     SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
@@ -160,7 +168,26 @@ int main(void)
     rbc_mesh_event_t evt;
     while (true)
     {
-      toggle_led(LED_GREEN);
+
+      for (uint32_t pin = BUTTON_START; pin <= BUTTON_STOP; ++pin)
+      {
+          if(nrf_gpio_pin_read(pin) == 1)
+          {
+              logger_print("button press ");
+              logger_print_uint(pin);
+              logger_println("");
+              while(nrf_gpio_pin_read(pin) == 1);
+              uint8_t mesh_data[1];
+              uint32_t led_status = !!((pin - BUTTON_START) & 0x01); /* even buttons are OFF, odd buttons are ON */
+
+              mesh_data[0] = led_status;
+              if (rbc_mesh_value_set(1, mesh_data, 1) == NRF_SUCCESS)
+              {
+                  led_config(LED_BLUE, led_status);
+              }
+          }
+      }
+
       if (rbc_mesh_event_get(&evt) == NRF_SUCCESS)
       {
           rbc_mesh_event_handler(&evt);
