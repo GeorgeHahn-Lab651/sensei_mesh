@@ -9,7 +9,7 @@
 #TARGET_BOARD         ?= BOARD_PCA10028
 TARGET_BOARD         ?= BOARD_CUSTOM
 
-USE_RBC_MESH_SERIAL  ?= "no"
+USE_RBC_MESH_SERIAL  ?= "yes"
 USE_DFU              ?= "no"
 
 #------------------------------------------------------------------------------
@@ -91,19 +91,16 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 # source common to all targets
 
-C_SOURCE_FILES += main.c leds.c
+C_SOURCE_FILES += src/main.c src/leds.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 
-CXX_SOURCE_FILES += logger.cpp
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/variants/Simblee/variant.cpp
 
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
 	CFLAGS += -D RBC_MESH_SERIAL=1
-
-	C_SOURCE_FILES += $(RBC_MESH)/src/serial_handler_spi.c
+	C_SOURCE_FILES += $(RBC_MESH)/src/serial_handler_uart.c
 	C_SOURCE_FILES += $(RBC_MESH)/src/mesh_aci.c
-	C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/spi_slave/spi_slave.c
 endif
 
 ifeq ($(USE_DFU), "yes")
@@ -145,7 +142,7 @@ ARDUINO_CORE = arduino_core/core.a
 
 # includes common to all targets
 
-INC_PATHS += -I../include -I.
+INC_PATHS += -Isrc
 INC_PATHS += -I$(RBC_MESH)
 INC_PATHS += -I$(RBC_MESH)/include
 INC_PATHS += -Ibsp

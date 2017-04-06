@@ -59,6 +59,8 @@ extern "C" {
 
 #define RX_PIN_NUMBER  0
 #define TX_PIN_NUMBER  1
+//#define CTS_PIN_NUMBER 0xff
+//#define RTS_PIN_NUMBER 0xff
 #define HWFC           false
 
 #ifdef __cplusplus

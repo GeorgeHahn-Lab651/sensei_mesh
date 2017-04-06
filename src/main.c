@@ -36,7 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "nrf_gpio.h"
 #include "boards.h"
 #include "leds.h"
-#include "logger.h"
 #include "app_timer.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -66,7 +65,6 @@ void timeOut(void * p_context)
 /** @brief General error handler. */
 static inline void error_loop(void)
 {
-    logger_print("error");
     __disable_irq();
     while (true)
     {
@@ -149,9 +147,6 @@ void clock_initialization()
 
 int main(void)
 {
-    logger_init();
-    logger_println("mesh test!");
-
     nrf_gpio_cfg_input(BUTTON_1, NRF_GPIO_PIN_PULLDOWN);
     nrf_gpio_cfg_input(BUTTON_2, NRF_GPIO_PIN_PULLDOWN);
 
@@ -173,6 +168,9 @@ int main(void)
     error_code = rbc_mesh_init(init_params);
     APP_ERROR_CHECK(error_code);
 
+    /* Initialize serial ACI */
+    mesh_aci_init();
+
     /* Enable handle 1 */
     error_code = rbc_mesh_value_enable(1);
     APP_ERROR_CHECK(error_code);
@@ -189,9 +187,6 @@ int main(void)
       {
           if(nrf_gpio_pin_read(pin) == 1)
           {
-              logger_print("button press ");
-              logger_print_uint(pin);
-              logger_println("");
               while(nrf_gpio_pin_read(pin) == 1);
               uint8_t mesh_data[1];
               uint32_t led_status = !!((pin - BUTTON_START) & 0x01); /* even buttons are OFF, odd buttons are ON */
