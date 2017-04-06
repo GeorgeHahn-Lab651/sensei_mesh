@@ -6,7 +6,7 @@ void init_leds() {
 }
 
 void toggle_led(unsigned char led) {
-  LEDS_INVERT(1 << led);
+  LEDS_INVERT(1 << (led + LED_START));
 }
 
 void led_config(uint8_t led, uint8_t conf)

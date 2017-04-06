@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "boards.h"
 #include "leds.h"
 #include "logger.h"
+#include "app_timer.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -49,11 +50,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MESH_CLOCK_SRC          (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
 
 
+//  Timer settings
+#define APP_TIMER_ENABLED 1
+#define APP_TIMER_PRESCALER             327
+#define APP_TIMER_MAX_TIMERS            1
+#define APP_TIMER_OP_QUEUE_SIZE         1
+
+static app_timer_id_t         timer_ID;
+
+
+void timeOut(void * p_context)
+{
+    toggle_led(LED_RED);
+}
+
 /** @brief General error handler. */
 static inline void error_loop(void)
 {
     logger_print("error");
-    toggle_led(LED_RED);
     __disable_irq();
     while (true)
     {
@@ -122,6 +136,18 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
     }
 }
 
+void clock_initialization()
+{
+    NRF_CLOCK->LFCLKSRC            = (CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos);
+    NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
+    NRF_CLOCK->TASKS_LFCLKSTART    = 1;
+
+    while (NRF_CLOCK->EVENTS_LFCLKSTARTED == 0)
+    {
+        // Do nothing.
+    }
+}
+
 int main(void)
 {
     logger_init();
@@ -136,14 +162,6 @@ int main(void)
 
     init_leds();
 
-#ifdef RBC_MESH_SERIAL
-
-    /* only want to enable serial interface, and let external host setup the framework */
-    mesh_aci_init();
-    mesh_aci_start();
-
-#else
-
     /* Initialize mesh. */
     rbc_mesh_init_params_t init_params;
     init_params.access_addr = MESH_ACCESS_ADDR;
@@ -156,14 +174,13 @@ int main(void)
     error_code = rbc_mesh_init(init_params);
     APP_ERROR_CHECK(error_code);
 
-    /* Enable handle 1 and 2 */
+    /* Enable handle 1 */
     error_code = rbc_mesh_value_enable(1);
     APP_ERROR_CHECK(error_code);
-    error_code = rbc_mesh_value_enable(2);
-    APP_ERROR_CHECK(error_code);
-    error_code = rbc_mesh_value_enable(3);
-    APP_ERROR_CHECK(error_code);
-#endif
+
+    APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, false);
+    app_timer_create(&timer_ID, APP_TIMER_MODE_REPEATED, timeOut);
+    app_timer_start(timer_ID, 100, NULL);
 
     rbc_mesh_event_t evt;
     while (true)
