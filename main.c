@@ -51,7 +51,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 //  Timer settings
-#define APP_TIMER_ENABLED 1
 #define APP_TIMER_PRESCALER             327
 #define APP_TIMER_MAX_TIMERS            1
 #define APP_TIMER_OP_QUEUE_SIZE         1
