@@ -169,7 +169,9 @@ int main(void)
     APP_ERROR_CHECK(error_code);
 
     /* Initialize serial ACI */
+#ifdef RBC_MESH_SERIAL
     mesh_aci_init();
+#endif
 
     /* Enable handle 1 */
     error_code = rbc_mesh_value_enable(1);
@@ -180,6 +182,7 @@ int main(void)
     app_timer_start(timer_ID, 100, NULL);
 
     rbc_mesh_event_t evt;
+
     while (true)
     {
 

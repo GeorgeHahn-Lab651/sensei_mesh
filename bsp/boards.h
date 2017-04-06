@@ -42,6 +42,8 @@
   #include "d52_starterkit.h"
 #elif defined (BOARD_ARDUINO_PRIMO)
   #include "arduino_primo.h"
+#elif defined (BOARD_SENSEI)
+  #include "board_sensei.h"
 #elif defined(BOARD_CUSTOM)
   #include "custom_board.h"
 #else
