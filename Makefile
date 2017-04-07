@@ -91,7 +91,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 # source common to all targets
 
-C_SOURCE_FILES += src/main.c src/leds.c
+C_SOURCE_FILES += src/main.c src/leds.c src/config.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
@@ -158,7 +158,7 @@ INC_PATHS += -I$(COMPONENTS)/libraries/util
 INC_PATHS += -I$(COMPONENTS)/libraries/timer
 INC_PATHS += -I$(COMPONENTS)/ble/common
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/spi_slave
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/pstorage
 
 INC_PATHS += -I$(COMPONENTS)/toolchain/gcc
 INC_PATHS += -I$(COMPONENTS)/toolchain

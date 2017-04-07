@@ -37,6 +37,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "boards.h"
 #include "leds.h"
 #include "app_timer.h"
+#include "pstorage_platform.h"
+#include "config.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -133,6 +135,14 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
     }
 }
 
+/* dispatch system events to interested modules. */
+static void sys_evt_dispatch(uint32_t sys_evt)
+{
+    pstorage_sys_event_handler(sys_evt);
+    //ble_advertising_on_sys_evt(sys_evt);
+}
+
+
 void clock_initialization()
 {
     NRF_CLOCK->LFCLKSRC            = (CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos);
@@ -154,7 +164,10 @@ int main(void)
     SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
     softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
 
-    init_leds();
+    // Register with the SoftDevice handler module for system events.
+    softdevice_sys_evt_handler_set(sys_evt_dispatch);
+
+    LEDS_CONFIGURE(LEDS_MASK);
 
     /* Initialize mesh. */
     rbc_mesh_init_params_t init_params;
@@ -167,6 +180,8 @@ int main(void)
     uint32_t error_code;
     error_code = rbc_mesh_init(init_params);
     APP_ERROR_CHECK(error_code);
+
+    config_init();
 
     /* Initialize serial ACI */
 #ifdef RBC_MESH_SERIAL

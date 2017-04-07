@@ -158,7 +158,6 @@ uint32_t rbc_mesh_init(rbc_mesh_init_params_t init_params)
     fifo_init(&m_rbc_event_fifo);
     timeslot_resume();
 
-
 #ifdef MESH_DFU
     return dfu_init();
 #else
