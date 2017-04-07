@@ -39,6 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "app_timer.h"
 #include "pstorage_platform.h"
 #include "config.h"
+#include "sensor.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -61,17 +62,18 @@ static app_timer_id_t         timer_ID;
 
 void timeOut(void * p_context)
 {
-    toggle_led(LED_RED);
+  sensor_update();
+  toggle_led(LED_RED);
 }
 
 /** @brief General error handler. */
 static inline void error_loop(void)
 {
-    __disable_irq();
-    while (true)
-    {
-        __WFE();
-    }
+  __disable_irq();
+  while (true)
+  {
+    __WFE();
+  }
 }
 
 /**
@@ -83,20 +85,7 @@ static inline void error_loop(void)
 */
 void sd_assert_handler(uint32_t pc, uint16_t line_num, const uint8_t* p_file_name)
 {
-    error_loop();
-}
-
-/**
-* @brief App error handle callback. Called whenever an APP_ERROR_CHECK() fails.
-*   Never returns.
-*
-* @param[in] error_code The error code sent to APP_ERROR_CHECK()
-* @param[in] line_num Line where the error check failed
-* @param[in] p_file_name File where the error check failed
-*/
-void app_error_handler_old(uint32_t error_code, uint32_t line_num, const uint8_t * p_file_name)
-{
-    error_loop();
+  error_loop();
 }
 
 /** @brief Hardware fault handler. */

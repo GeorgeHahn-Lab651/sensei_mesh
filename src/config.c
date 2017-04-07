@@ -38,6 +38,10 @@ static bool ensure_config_loaded() {
     if (pstorage_load((uint8_t*)&m_config, &m_storage_handle, sizeof(app_config_t), APP_CONFIG_OFFSET) != NRF_SUCCESS) {
       return false;
     }
+    if (m_config.sensor_id == 0xff) {
+      // Flash has not been written yet
+      memset(&m_config, 0, sizeof(app_config_t));
+    }
     m_loaded = true;
   }
   return true;

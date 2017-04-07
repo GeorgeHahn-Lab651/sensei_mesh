@@ -99,11 +99,11 @@ class AciEventNew(AciEventPkt):
         if self.Len < 3:
             logging.error("Invalid length for %s event: %s", self.__class__.__name__, str(pkt))
         else:
-            self.ValueHandle = pkt[2]
+            self.ValueHandle = (pkt[1] << 8) + pkt[2]
             self.Data = pkt[3:]
 
     def __repr__(self):
-        return str.format("I am %s and my Lenght is %d, OpCode is 0x%02x, ValueHandle is 0x%02x, and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.ValueHandle, self.Data))
+        return str.format("I am %s and my Lenght is %d, OpCode is 0x%02x, ValueHandle is 0x%04x, and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.ValueHandle, self.Data))
 
 class AciEventUpdate(AciEventNew):
     #OpCode = 0xB4
