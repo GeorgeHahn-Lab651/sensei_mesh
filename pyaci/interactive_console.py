@@ -25,6 +25,9 @@ class Interactive(object):
     def RadioReset(self):
         self.acidev.write_aci_cmd(AciCommand.AciRadioReset())
 
+    def AppCommand(self, data=[], length=1):
+        self.acidev.write_aci_cmd(AciCommand.AciAppCommand(data=data,length=len(data)+1))
+
     def Init(self, AccessAddress=0x8E89BED6, MinInterval=100, Channel=39):
         self.acidev.write_aci_cmd(AciCommand.AciInit(access_address=AccessAddress, min_interval=MinInterval, channel=Channel))
 

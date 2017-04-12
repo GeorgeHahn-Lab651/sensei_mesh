@@ -99,6 +99,13 @@ typedef __packed_armcc struct
     uint16_t packet_type;
 } __packed_gcc serial_evt_cmd_rsp_params_dfu_t;
 
+typedef __packed_armcc struct
+{
+    uint8_t app_cmd_opcode;
+    uint8_t data[RBC_MESH_VALUE_MAX_LEN];
+} __packed_gcc serial_evt_cmd_rsp_params_app_cmd_t;
+
+
 /****** EVT PARAMS ******/
 typedef __packed_armcc struct
 {
@@ -118,7 +125,8 @@ typedef __packed_armcc struct
         serial_evt_cmd_rsp_params_int_min_t int_min;
         serial_evt_cmd_rsp_params_val_get_t val_get;
         serial_evt_cmd_rsp_params_dfu_t dfu;
-    } __packed_gcc response;        
+        serial_evt_cmd_rsp_params_app_cmd_t app_cmd;
+    } __packed_gcc response;
 } __packed_gcc serial_evt_params_cmd_rsp_t;
 
 typedef __packed_armcc struct
@@ -133,31 +141,31 @@ typedef __packed_armcc struct
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_update_t;
 
-typedef __packed_armcc struct 
+typedef __packed_armcc struct
 {
     rbc_mesh_value_handle_t handle;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_conflicting_t;
 
-typedef __packed_armcc struct 
+typedef __packed_armcc struct
 {
     rbc_mesh_value_handle_t handle;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_tx_t;
 
-typedef __packed_armcc struct 
+typedef __packed_armcc struct
 {
     operating_mode_t operating_mode;
     uint8_t hw_error;
     uint8_t data_credit_available;
 } __packed_gcc serial_evt_params_event_device_started_t;
 
-typedef __packed_armcc struct 
+typedef __packed_armcc struct
 {
     dfu_packet_t packet;
 } __packed_gcc serial_evt_params_dfu_t;
 
-typedef __packed_armcc struct 
+typedef __packed_armcc struct
 {
     uint8_t length;
     uint8_t opcode;

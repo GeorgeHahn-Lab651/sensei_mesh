@@ -63,7 +63,7 @@ static app_timer_id_t         timer_ID;
 void timeOut(void * p_context)
 {
   sensor_update();
-  toggle_led(LED_RED);
+  //toggle_led(LED_RED);
 }
 
 /** @brief General error handler. */
@@ -144,6 +144,14 @@ void clock_initialization()
     }
 }
 
+uint16_t app_cmd_handler(uint8_t cmd_opcode, uint8_t *data, uint8_t *response, uint16_t *response_length) {
+  toggle_led(LED_RED);
+  data[0] = 0xfa;
+  *response_length = 1;
+  return NRF_SUCCESS;
+}
+
+
 int main(void)
 {
     nrf_gpio_cfg_input(BUTTON_1, NRF_GPIO_PIN_PULLDOWN);
@@ -175,6 +183,7 @@ int main(void)
     /* Initialize serial ACI */
 #ifdef RBC_MESH_SERIAL
     mesh_aci_init();
+    mesh_aci_app_cmd_handler_set(app_cmd_handler);
 #endif
 
     /* Enable handle 1 */

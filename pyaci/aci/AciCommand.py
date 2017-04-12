@@ -4,6 +4,7 @@ def AciCommandLookUp(CommandOpCode):
     commandNameLUT = {
         AciEcho.OpCode: "Echo",
         AciRadioReset.OpCode: "RadioReset",
+        AciAppCommand.OpCode: "AppCommand",
         AciInit.OpCode: "Init",
         AciValueSet.OpCode: "ValueSet",
         AciValueEnable.OpCode: "ValueEnable",
@@ -63,6 +64,15 @@ class AciRadioReset(AciCommandPkt):
     Length = 1
     def __init__(self):
         super(AciRadioReset, self).__init__(length=self.Length,OpCode=self.OpCode)
+
+class AciAppCommand(AciCommandPkt):
+    OpCode = 0x1A
+    MAX_CMD_LENGTH = 28
+    def __init__(self, data=[], length=1):
+        if length > self.MAX_CMD_LENGTH:
+            logging.error("App commands can have a maximum of %d byte packet size (including the opcode), not %d",MAX_CMD_LENGTH,length)
+        else:
+            super(AciAppCommand, self).__init__(length=length,OpCode=self.OpCode, data = data)
 
 class AciInit(AciCommandPkt):
     OpCode = 0x70
