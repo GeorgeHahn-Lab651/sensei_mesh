@@ -101,7 +101,6 @@ typedef __packed_armcc struct
 
 typedef __packed_armcc struct
 {
-    uint8_t app_cmd_opcode;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_cmd_rsp_params_app_cmd_t;
 

@@ -545,7 +545,7 @@ static void serial_command_handler(serial_cmd_t* p_serial_cmd)
                 error_code = NRF_ERROR_NOT_SUPPORTED;
               }
 
-              serial_evt.length += 1 + 1 + 1 ; /* opcode + command + status */
+              serial_evt.length += 1 + 1 + 1; /* opcode + command + status */
               serial_evt.params.cmd_rsp.status = error_code_translate(error_code);
 
               serial_handler_event_send(&serial_evt);
