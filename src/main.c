@@ -38,6 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "leds.h"
 #include "app_timer.h"
 #include "pstorage_platform.h"
+#include "app_cmd.h"
 #include "config.h"
 #include "sensor.h"
 #include <stdbool.h>
@@ -142,13 +143,6 @@ void clock_initialization()
     {
         // Do nothing.
     }
-}
-
-uint16_t app_cmd_handler(uint8_t cmd_opcode, uint8_t *data, uint8_t *response, uint16_t *response_length) {
-  toggle_led(LED_RED);
-  data[0] = 0xfa;
-  *response_length = 1;
-  return NRF_SUCCESS;
 }
 
 

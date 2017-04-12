@@ -536,8 +536,8 @@ static void serial_command_handler(serial_cmd_t* p_serial_cmd)
 
               if (app_cmd_handler_cb) {
                 error_code = app_cmd_handler_cb(
-                  p_serial_cmd->params.app_cmd.app_cmd_opcode,
                   p_serial_cmd->params.app_cmd.data,
+                  p_serial_cmd->length - SERIAL_PACKET_OVERHEAD,
                   serial_evt.params.cmd_rsp.response.app_cmd.data,
                   (uint16_t*) &serial_evt.length);
               } else {

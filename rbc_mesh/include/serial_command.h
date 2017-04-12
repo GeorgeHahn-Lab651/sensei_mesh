@@ -115,8 +115,7 @@ typedef __packed_armcc struct
 
 typedef __packed_armcc struct
 {
-    uint8_t app_cmd_opcode;
-    uint8_t data[28];
+    uint8_t data[29];
 } __packed_gcc serial_cmd_params_app_cmd_t;
 
 typedef __packed_armcc struct

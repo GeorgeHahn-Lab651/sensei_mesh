@@ -72,7 +72,7 @@ void mesh_aci_command_check(void);
 void mesh_aci_rbc_event_handler(rbc_mesh_event_t* p_evt);
 
 /** Set app command handler */
-typedef uint16_t (*app_cmd_handler_t) (uint8_t cmd_opcode, uint8_t *data, uint8_t *response, uint16_t *response_length);
+typedef uint16_t (*app_cmd_handler_t) (uint8_t *data, uint16_t length, uint8_t *response, uint16_t *response_length);
 void mesh_aci_app_cmd_handler_set(app_cmd_handler_t app_cmd_handler);
 
 #endif /* _MESH_ACI_H__ */
