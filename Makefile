@@ -91,7 +91,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 # source common to all targets
 
-C_SOURCE_FILES += src/main.c src/leds.c src/config.c src/sensor.c src/app_cmd.c
+C_SOURCE_FILES += src/main.c src/leds.c src/config.c src/sensor.c src/app_cmd.c src/epoch.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp

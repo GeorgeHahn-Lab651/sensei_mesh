@@ -539,7 +539,7 @@ static void serial_command_handler(serial_cmd_t* p_serial_cmd)
                   p_serial_cmd->params.app_cmd.data,
                   p_serial_cmd->length - SERIAL_PACKET_OVERHEAD,
                   serial_evt.params.cmd_rsp.response.app_cmd.data,
-                  (uint16_t*) &serial_evt.length);
+                  &serial_evt.length);
               } else {
                 serial_evt.length = 3;
                 error_code = NRF_ERROR_NOT_SUPPORTED;
