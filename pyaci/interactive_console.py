@@ -74,7 +74,6 @@ class Interactive(object):
 
     # Experimental: to be removed
     def runCommand(self, command):
-        print("Running + {data}".format(data=command.serialize()))
         self.AppCommand(command.serialize())
 
     def setTime(self):
