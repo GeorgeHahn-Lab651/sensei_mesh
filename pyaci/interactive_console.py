@@ -4,6 +4,8 @@ from argparse import ArgumentParser
 from traitlets import config
 from aci import AciCommand
 from aci_serial import AciUart
+import time
+import sensei_cmd
 
 class Interactive(object):
     def __init__(self, acidev):
@@ -25,7 +27,7 @@ class Interactive(object):
     def RadioReset(self):
         self.acidev.write_aci_cmd(AciCommand.AciRadioReset())
 
-    def AppCommand(self, data=[], length=1):
+    def AppCommand(self, data=[]):
         self.acidev.write_aci_cmd(AciCommand.AciAppCommand(data=data,length=len(data)+1))
 
     def Init(self, AccessAddress=0x8E89BED6, MinInterval=100, Channel=39):
@@ -69,6 +71,14 @@ class Interactive(object):
 
     def MinIntervalGet(self):
         self.acidev.write_aci_cmd(AciCommand.AciIntervalMinMsGet())
+
+    # Experimental: to be removed
+    def runCommand(self, command):
+        print("Running + {data}".format(data=command.serialize()))
+        self.AppCommand(command.serialize())
+
+    def setTime(self):
+        self.runCommand(sensei_cmd.SetTime())
 
 def get_ipython_config(device):
     # import os, sys, IPython

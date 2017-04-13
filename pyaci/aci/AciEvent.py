@@ -57,7 +57,7 @@ class AciEventPkt(object):
                 logging.error('Packet size must be > 1, packet contents: %s', str(pkt))
 
     def __repr__(self):
-        return str.format("I am %s and my Lenght is %d, OpCode is 0x%02x and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.Data))
+        return str.format("I am %s and my Length is %d, OpCode is 0x%02x and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.Data))
 
 class AciDeviceStarted(AciEventPkt):
     #OpCode = 0x81
@@ -71,7 +71,7 @@ class AciDeviceStarted(AciEventPkt):
             self.DataCreditAvailable = pkt[4]
 
     def __repr__(self):
-        return str.format("I am %s and my Lenght is %d, OpCode is 0x%02x, OperatingMode is 0x%02x, HWError is 0x%02x, and DataCreditAvailable is 0x%02x" %(self.__class__.__name__, self.Len, self.OpCode, self.OperatingMode, self.HWError, self.DataCreditAvailable))
+        return str.format("I am %s and my Length is %d, OpCode is 0x%02x, OperatingMode is 0x%02x, HWError is 0x%02x, and DataCreditAvailable is 0x%02x" %(self.__class__.__name__, self.Len, self.OpCode, self.OperatingMode, self.HWError, self.DataCreditAvailable))
 
 class AciEchoRsp(AciEventPkt):
     #OpCode = 0x82
@@ -90,7 +90,7 @@ class AciCmdRsp(AciEventPkt):
             self.Data = pkt[4:]
 
     def __repr__(self):
-        return str.format("I am %s and my Lenght is %d, OpCode is 0x%02x, CommandOpCode is %s, StatusCode is %s, and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, AciCommand.AciCommandLookUp(self.CommandOpCode), AciStatusLookUp(self.StatusCode), self.Data))
+        return str.format("I am %s and my Length is %d, OpCode is 0x%02x, CommandOpCode is %s, StatusCode is %s, and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, AciCommand.AciCommandLookUp(self.CommandOpCode), AciStatusLookUp(self.StatusCode), self.Data))
 
 class AciEventNew(AciEventPkt):
     #OpCode = 0xB3
@@ -103,7 +103,7 @@ class AciEventNew(AciEventPkt):
             self.Data = pkt[3:]
 
     def __repr__(self):
-        return str.format("I am %s and my Lenght is %d, OpCode is 0x%02x, ValueHandle is 0x%04x, and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.ValueHandle, self.Data))
+        return str.format("I am %s and my Length is %d, OpCode is 0x%02x, ValueHandle is 0x%04x, and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.ValueHandle, self.Data))
 
 class AciEventUpdate(AciEventNew):
     #OpCode = 0xB4

@@ -1,32 +1,4 @@
-/***********************************************************************************
-Copyright (c) Nordic Semiconductor ASA
-All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-  1. Redistributions of source code must retain the above copyright notice, this
-  list of conditions and the following disclaimer.
-
-  2. Redistributions in binary form must reproduce the above copyright notice, this
-  list of conditions and the following disclaimer in the documentation and/or
-  other materials provided with the distribution.
-
-  3. Neither the name of Nordic Semiconductor ASA nor the names of other
-  contributors to this software may be used to endorse or promote products
-  derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-************************************************************************************/
 
 #include "rbc_mesh.h"
 #include "mesh_aci.h"
@@ -36,7 +8,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "nrf_gpio.h"
 #include "boards.h"
 #include "leds.h"
-#include "app_timer.h"
 #include "pstorage_platform.h"
 #include "app_cmd.h"
 #include "config.h"
@@ -52,20 +23,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MESH_CHANNEL            (38)
 #define MESH_CLOCK_SRC          (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
 
-
-//  Timer settings
-#define APP_TIMER_PRESCALER             327
-#define APP_TIMER_MAX_TIMERS            1
-#define APP_TIMER_OP_QUEUE_SIZE         1
-
-static app_timer_id_t         timer_ID;
-
-
-void timeOut(void * p_context)
-{
-  sensor_update();
-  //toggle_led(LED_RED);
-}
 
 /** @brief General error handler. */
 static inline void error_loop(void)
@@ -92,7 +49,7 @@ void sd_assert_handler(uint32_t pc, uint16_t line_num, const uint8_t* p_file_nam
 /** @brief Hardware fault handler. */
 void HardFault_Handler(void)
 {
-    error_loop();
+  error_loop();
 }
 
 /**
@@ -102,27 +59,27 @@ void HardFault_Handler(void)
 */
 static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
 {
-    toggle_led(LED_GREEN);
+  toggle_led(LED_GREEN);
 
-    switch (p_evt->type)
-    {
-        case RBC_MESH_EVENT_TYPE_CONFLICTING_VAL:
-        case RBC_MESH_EVENT_TYPE_NEW_VAL:
-        case RBC_MESH_EVENT_TYPE_UPDATE_VAL:
-          if (p_evt->params.rx.value_handle == 1) {
-            led_config(LED_BLUE, p_evt->params.rx.p_data[0]);
-          }
-          break;
-        case RBC_MESH_EVENT_TYPE_TX:
-        case RBC_MESH_EVENT_TYPE_INITIALIZED:
-        case RBC_MESH_EVENT_TYPE_DFU_NEW_FW_AVAILABLE:
-        case RBC_MESH_EVENT_TYPE_DFU_RELAY_REQ:
-        case RBC_MESH_EVENT_TYPE_DFU_SOURCE_REQ:
-        case RBC_MESH_EVENT_TYPE_DFU_START:
-        case RBC_MESH_EVENT_TYPE_DFU_END:
-        case RBC_MESH_EVENT_TYPE_DFU_BANK_AVAILABLE:
-            break;
-    }
+  switch (p_evt->type)
+  {
+    case RBC_MESH_EVENT_TYPE_CONFLICTING_VAL:
+    case RBC_MESH_EVENT_TYPE_NEW_VAL:
+    case RBC_MESH_EVENT_TYPE_UPDATE_VAL:
+      if (p_evt->params.rx.value_handle == 1) {
+        led_config(LED_BLUE, p_evt->params.rx.p_data[0]);
+      }
+      break;
+    case RBC_MESH_EVENT_TYPE_TX:
+    case RBC_MESH_EVENT_TYPE_INITIALIZED:
+    case RBC_MESH_EVENT_TYPE_DFU_NEW_FW_AVAILABLE:
+    case RBC_MESH_EVENT_TYPE_DFU_RELAY_REQ:
+    case RBC_MESH_EVENT_TYPE_DFU_SOURCE_REQ:
+    case RBC_MESH_EVENT_TYPE_DFU_START:
+    case RBC_MESH_EVENT_TYPE_DFU_END:
+    case RBC_MESH_EVENT_TYPE_DFU_BANK_AVAILABLE:
+      break;
+  }
 }
 
 /* dispatch system events to interested modules. */
@@ -143,78 +100,82 @@ void clock_initialization()
     {
         // Do nothing.
     }
+
+    NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
 }
 
 
 int main(void)
 {
-    nrf_gpio_cfg_input(BUTTON_1, NRF_GPIO_PIN_PULLDOWN);
-    nrf_gpio_cfg_input(BUTTON_2, NRF_GPIO_PIN_PULLDOWN);
+  //clock_initialization();
 
-    /* Enable Softdevice (including sd_ble before framework */
-    SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
-    softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
+  nrf_gpio_cfg_input(BUTTON_1, NRF_GPIO_PIN_PULLDOWN);
+  nrf_gpio_cfg_input(BUTTON_2, NRF_GPIO_PIN_PULLDOWN);
 
-    // Register with the SoftDevice handler module for system events.
-    softdevice_sys_evt_handler_set(sys_evt_dispatch);
+  /* Enable Softdevice (including sd_ble before framework */
+  SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
+  softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
 
-    LEDS_CONFIGURE(LEDS_MASK);
+  // Register with the SoftDevice handler module for system events.
+  softdevice_sys_evt_handler_set(sys_evt_dispatch);
 
-    /* Initialize mesh. */
-    rbc_mesh_init_params_t init_params;
-    init_params.access_addr = MESH_ACCESS_ADDR;
-    init_params.interval_min_ms = MESH_INTERVAL_MIN_MS;
-    init_params.channel = MESH_CHANNEL;
-    init_params.lfclksrc = MESH_CLOCK_SRC;
-    init_params.tx_power = RBC_MESH_TXPOWER_0dBm;
+  LEDS_CONFIGURE(LEDS_MASK);
 
-    uint32_t error_code;
-    error_code = rbc_mesh_init(init_params);
-    APP_ERROR_CHECK(error_code);
+  // if (NRF_CLOCK->LFCLKSRC == (CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos)) {
+  //   toggle_led(LED_GREEN);
+  // }
 
-    config_init();
+  /* Initialize mesh. */
+  rbc_mesh_init_params_t init_params;
+  init_params.access_addr = MESH_ACCESS_ADDR;
+  init_params.interval_min_ms = MESH_INTERVAL_MIN_MS;
+  init_params.channel = MESH_CHANNEL;
+  init_params.lfclksrc = MESH_CLOCK_SRC;
+  init_params.tx_power = RBC_MESH_TXPOWER_0dBm;
 
-    /* Initialize serial ACI */
+  uint32_t error_code;
+  error_code = rbc_mesh_init(init_params);
+  APP_ERROR_CHECK(error_code);
+
+  config_init();
+
+  /* Initialize serial ACI */
 #ifdef RBC_MESH_SERIAL
-    mesh_aci_init();
-    mesh_aci_app_cmd_handler_set(app_cmd_handler);
+  mesh_aci_init();
+  mesh_aci_app_cmd_handler_set(app_cmd_handler);
 #endif
 
-    /* Enable handle 1 */
-    error_code = rbc_mesh_value_enable(1);
-    APP_ERROR_CHECK(error_code);
+  /* Enable handle 1 */
+  error_code = rbc_mesh_value_enable(1);
+  APP_ERROR_CHECK(error_code);
 
-    APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, false);
-    app_timer_create(&timer_ID, APP_TIMER_MODE_REPEATED, timeOut);
-    app_timer_start(timer_ID, 100, NULL);
+  rbc_mesh_event_t evt;
 
-    rbc_mesh_event_t evt;
+  while (true)
+  {
 
-    while (true)
+    for (uint32_t pin = BUTTON_START; pin <= BUTTON_STOP; ++pin)
     {
-
-      for (uint32_t pin = BUTTON_START; pin <= BUTTON_STOP; ++pin)
+      if(nrf_gpio_pin_read(pin) == 1)
       {
-          if(nrf_gpio_pin_read(pin) == 1)
-          {
-              while(nrf_gpio_pin_read(pin) == 1);
-              uint8_t mesh_data[1];
-              uint32_t led_status = !!((pin - BUTTON_START) & 0x01); /* even buttons are OFF, odd buttons are ON */
+        while(nrf_gpio_pin_read(pin) == 1);
+        uint8_t mesh_data[1];
+        uint32_t led_status = !!((pin - BUTTON_START) & 0x01); /* even buttons are OFF, odd buttons are ON */
 
-              mesh_data[0] = led_status;
-              if (rbc_mesh_value_set(1, mesh_data, 1) == NRF_SUCCESS)
-              {
-                  led_config(LED_BLUE, led_status);
-              }
-          }
+        mesh_data[0] = led_status;
+        if (rbc_mesh_value_set(1, mesh_data, 1) == NRF_SUCCESS)
+        {
+          led_config(LED_BLUE, led_status);
+        }
       }
-
-      if (rbc_mesh_event_get(&evt) == NRF_SUCCESS)
-      {
-          rbc_mesh_event_handler(&evt);
-          rbc_mesh_event_release(&evt);
-      }
-
-      sd_app_evt_wait();
     }
+
+    if (rbc_mesh_event_get(&evt) == NRF_SUCCESS)
+    {
+      rbc_mesh_event_handler(&evt);
+      rbc_mesh_event_release(&evt);
+    }
+
+    sd_app_evt_wait();
+  }
 }

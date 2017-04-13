@@ -48,7 +48,7 @@ class AciCommandPkt(object):
         return pkt
 
     def __repr__(self):
-        return str.format("I am %s and my Lenght is %d, OpCode is 0x%02x and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.Data))
+        return str.format("I am %s and my Length is %d, OpCode is 0x%02x and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.Data))
 
 class AciEcho(AciCommandPkt):
     OpCode = 0x02
