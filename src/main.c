@@ -12,6 +12,7 @@
 #include "app_cmd.h"
 #include "config.h"
 #include "sensor.h"
+#include "time_sync.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -59,7 +60,6 @@ void HardFault_Handler(void)
 */
 static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
 {
-  toggle_led(LED_GREEN);
 
   switch (p_evt->type)
   {
@@ -138,6 +138,7 @@ int main(void)
   APP_ERROR_CHECK(error_code);
 
   config_init();
+  time_sync_init();
 
   /* Initialize serial ACI */
 #ifdef RBC_MESH_SERIAL

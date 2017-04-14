@@ -13,14 +13,14 @@ typedef __packed_armcc struct
 {
 	int32_t epoch;
   uint16_t ms;
-} __packed_gcc app_cmd_params_set_epoch_time_t;
+} __packed_gcc app_cmd_params_set_clock_time_t;
 
 typedef __packed_armcc struct
 {
     app_cmd_opcode_t opcode;
     __packed_armcc union
     {
-        app_cmd_params_set_epoch_time_t         set_epoch_time;
+        app_cmd_params_set_clock_time_t         set_clock_time;
     } __packed_gcc params;
 } __packed_gcc  app_cmd_t;
 

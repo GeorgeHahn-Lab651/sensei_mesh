@@ -24,7 +24,8 @@ RBC_MESH  		:= rbc_mesh
 
 LINKER_SCRIPT := $(SIMBLEE_BASE)/variants/Simblee/linker_scripts/gcc/Simblee.ld
 RFD_LOADER 		:= $(SIMBLEE_BASE)/RFDLoader_osx
-SERIAL_PORT 	:= /dev/cu.usbserial-DN00CSZ7
+#SERIAL_PORT 	:= /dev/cu.usbserial-DN00D34P  # left
+SERIAL_PORT 	:= /dev/cu.usbserial-DN00CSZ7  # right
 #SERIAL_PORT 	:= /dev/cu.usbserial-A105RB12
 
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
@@ -91,7 +92,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 # source common to all targets
 
-C_SOURCE_FILES += src/main.c src/leds.c src/config.c src/sensor.c src/app_cmd.c src/epoch.c
+C_SOURCE_FILES += src/main.c src/leds.c src/config.c src/sensor.c src/app_cmd.c src/time_sync.c src/proximity.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
