@@ -24,10 +24,10 @@
 #define MESH_CHANNEL            (38)
 #define MESH_CLOCK_SRC          (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
 
-
 /** @brief General error handler. */
 static inline void error_loop(void)
 {
+  toggle_led(LED_RED);
   __disable_irq();
   while (true)
   {
@@ -121,6 +121,7 @@ int main(void)
 
   LEDS_CONFIGURE(LEDS_MASK);
 
+
   // if (NRF_CLOCK->LFCLKSRC == (CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos)) {
   //   toggle_led(LED_GREEN);
   // }
@@ -133,18 +134,25 @@ int main(void)
   init_params.lfclksrc = MESH_CLOCK_SRC;
   init_params.tx_power = RBC_MESH_TXPOWER_0dBm;
 
+
   uint32_t error_code;
   error_code = rbc_mesh_init(init_params);
+  if (error_code != NRF_SUCCESS) {
+    toggle_led(LED_GREEN);
+  }
   APP_ERROR_CHECK(error_code);
 
+  app_config_t app_config;
   config_init();
+  get_config(&app_config);
+
   time_sync_init();
 
   /* Initialize serial ACI */
-#ifdef RBC_MESH_SERIAL
-  mesh_aci_init();
-  mesh_aci_app_cmd_handler_set(app_cmd_handler);
-#endif
+  if (app_config.serial_enabled) {
+    mesh_aci_init();
+    mesh_aci_app_cmd_handler_set(app_cmd_handler);
+  }
 
   /* Enable handle 1 */
   error_code = rbc_mesh_value_enable(1);

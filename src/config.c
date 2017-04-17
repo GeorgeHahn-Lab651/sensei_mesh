@@ -2,9 +2,11 @@
 #include "config.h"
 #include "nrf_error.h"
 #include <string.h>
+#include "leds.h"
 
 // Should be bigger than app_config_t
-#define APP_CONFIG_BLOCK_SIZE 64
+#define APP_CONFIG_BLOCK_SIZE 32
+#define APP_CONFIG_BLOCK 0
 #define APP_CONFIG_OFFSET 0
 
 static pstorage_handle_t m_storage_handle;
@@ -33,14 +35,27 @@ bool config_init() {
   return true;
 }
 
+static void init_config_to_defaults() {
+  m_config.sensor_id = 0;
+  m_config.serial_enabled = 1;
+  m_config.mesh_channel = 38;
+}
+
 static bool ensure_config_loaded() {
   if (!m_loaded) {
-    if (pstorage_load((uint8_t*)&m_config, &m_storage_handle, sizeof(app_config_t), APP_CONFIG_OFFSET) != NRF_SUCCESS) {
+    static pstorage_handle_t block;
+    if (pstorage_block_identifier_get(&m_storage_handle, APP_CONFIG_BLOCK, &block) != NRF_SUCCESS) {
+      return false;
+    }
+
+    if (pstorage_load((uint8_t*)&m_config, &block, sizeof(app_config_t), APP_CONFIG_OFFSET) != NRF_SUCCESS) {
       return false;
     }
     if (m_config.sensor_id == 0xff) {
-      // Flash has not been written yet
-      memset(&m_config, 0, sizeof(app_config_t));
+      // Flash has not been written yet.  Initialize config to default values
+      init_config_to_defaults();
+    } else {
+      toggle_led(LED_GREEN);
     }
     m_loaded = true;
   }
@@ -55,9 +70,17 @@ bool get_config(app_config_t *config) {
   return true;
 }
 
-bool set_config(app_config_t *config) {
+uint32_t set_config(app_config_t *config) {
   memcpy(&m_config, config, sizeof(app_config_t));
-  return pstorage_store(&m_storage_handle, (uint8_t*)&m_config, sizeof(app_config_t), APP_CONFIG_OFFSET) == NRF_SUCCESS;
+  static pstorage_handle_t block;
+  uint32_t error_code;
+  error_code = pstorage_block_identifier_get(&m_storage_handle, APP_CONFIG_BLOCK, &block);
+  if (error_code != NRF_SUCCESS) {
+    return error_code;
+  }
+  // Size must be word-aligned
+  error_code = pstorage_store(&block, (uint8_t*)&m_config, ((sizeof(app_config_t)/16 + 1) * 16), APP_CONFIG_OFFSET);
+  return error_code;
 }
 
 uint8_t get_sensor_id() {

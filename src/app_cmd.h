@@ -3,10 +3,13 @@
 
 #include <stdint.h>
 #include "toolchain.h"
+#include "config.h"
 
 typedef enum
 {
-  APP_CMD_OPCODE_SET_EPOCH_TIME = 0x02,
+  APP_CMD_OPCODE_SET_TIME = 0x02,
+  APP_CMD_OPCODE_SET_CONFIG = 0x03,
+  APP_CMD_OPCODE_GET_CONFIG = 0x04,
 } app_cmd_opcode_t;
 
 typedef __packed_armcc struct
@@ -17,10 +20,16 @@ typedef __packed_armcc struct
 
 typedef __packed_armcc struct
 {
+  app_config_t config;
+} __packed_gcc app_cmd_params_set_config_t;
+
+typedef __packed_armcc struct
+{
     app_cmd_opcode_t opcode;
     __packed_armcc union
     {
-        app_cmd_params_set_clock_time_t         set_clock_time;
+        app_cmd_params_set_clock_time_t set_clock_time;
+        app_cmd_params_set_config_t     set_config;
     } __packed_gcc params;
 } __packed_gcc  app_cmd_t;
 

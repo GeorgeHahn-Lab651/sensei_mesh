@@ -9,7 +9,6 @@
 #TARGET_BOARD         ?= BOARD_PCA10028
 TARGET_BOARD         ?= BOARD_SENSEI
 
-USE_RBC_MESH_SERIAL  ?= "yes"
 USE_DFU              ?= "no"
 
 #------------------------------------------------------------------------------
@@ -27,6 +26,7 @@ RFD_LOADER 		:= $(SIMBLEE_BASE)/RFDLoader_osx
 #SERIAL_PORT 	:= /dev/cu.usbserial-DN00D34P  # left
 SERIAL_PORT 	:= /dev/cu.usbserial-DN00CSZ7  # right
 #SERIAL_PORT 	:= /dev/cu.usbserial-A105RB12
+#SERIAL_PORT   := /dev/cu.usbserial-FTZ86FTC
 
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
 	SERIAL_STRING := "_serial"
@@ -98,11 +98,9 @@ C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/variants/Simblee/variant.cpp
 
-ifeq ($(USE_RBC_MESH_SERIAL), "yes")
-	CFLAGS += -D RBC_MESH_SERIAL=1
-	C_SOURCE_FILES += $(RBC_MESH)/src/serial_handler_uart.c
-	C_SOURCE_FILES += $(RBC_MESH)/src/mesh_aci.c
-endif
+CFLAGS += -D RBC_MESH_SERIAL=1
+C_SOURCE_FILES += $(RBC_MESH)/src/serial_handler_uart.c
+C_SOURCE_FILES += $(RBC_MESH)/src/mesh_aci.c
 
 ifeq ($(USE_DFU), "yes")
 	CFLAGS += -D MESH_DFU=1
@@ -264,7 +262,6 @@ all: $(BUILD_DIRECTORIES) $(OBJECTS)
 	@echo "build with:    $(TOOLCHAIN_BASE)"
 	@echo "build target:  $(TARGET_BOARD)"
 	@echo "build options  --"
-	@echo "               USE_RBC_MESH_SERIAL $(USE_RBC_MESH_SERIAL)"
 	@echo "               USE_DFU             $(USE_DFU)"
 	@echo "build products --"
 	@echo "               $(OUTPUT_NAME).elf"
