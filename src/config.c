@@ -14,7 +14,9 @@ static app_config_t m_config;
 static bool m_loaded = false;
 
 static void m_storage_callback(pstorage_handle_t *p_handle, uint8_t op_code, uint32_t result, uint8_t *p_data, uint32_t data_len) {
-  // Nothing for now, with our memory cache, we don't care how long it takes to store.
+  if (op_code == PSTORAGE_STORE_OP_CODE && result == NRF_SUCCESS) {
+    toggle_led(LED_GREEN);
+  }
 }
 
 bool config_init() {
@@ -54,8 +56,6 @@ static bool ensure_config_loaded() {
     if (m_config.sensor_id == 0xff) {
       // Flash has not been written yet.  Initialize config to default values
       init_config_to_defaults();
-    } else {
-      toggle_led(LED_GREEN);
     }
     m_loaded = true;
   }

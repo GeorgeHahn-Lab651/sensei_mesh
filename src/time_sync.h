@@ -10,14 +10,17 @@ typedef enum {
   CLOCK_SOURCE_SERIAL,
 } clock_source_t;
 
-typedef __packed_armcc struct
-{
-  uint8_t sensor_id;
-  uint32_t epoch_time;
-  uint16_t clock_version;
-} __packed_gcc heartbeat_ad_t;
-
 void time_sync_init();
-void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source);
+void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int16_t clock_version);
+
+// Returns unix epoch
+int32_t get_clock_time();
+// Clock version increments from a master source and is distributed by all
+// in the heartbeat message
+int16_t get_clock_version();
+
+// Callbacks
+void main_timer_cb();
+void offset_timer_cb();
 
 #endif //__TIME_SYNC_H_

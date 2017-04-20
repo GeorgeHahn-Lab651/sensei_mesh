@@ -12,7 +12,9 @@
 #include "app_cmd.h"
 #include "config.h"
 #include "sensor.h"
+#include "transport_control.h"
 #include "time_sync.h"
+#include "heartbeat.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -23,6 +25,7 @@
 #define MESH_INTERVAL_MIN_MS    (100)
 #define MESH_CHANNEL            (38)
 #define MESH_CLOCK_SRC          (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
+#define TEST_LED_HANDLE         (0xfe01)
 
 /** @brief General error handler. */
 static inline void error_loop(void)
@@ -66,7 +69,7 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
     case RBC_MESH_EVENT_TYPE_CONFLICTING_VAL:
     case RBC_MESH_EVENT_TYPE_NEW_VAL:
     case RBC_MESH_EVENT_TYPE_UPDATE_VAL:
-      if (p_evt->params.rx.value_handle == 1) {
+      if (p_evt->params.rx.value_handle == TEST_LED_HANDLE) {
         led_config(LED_BLUE, p_evt->params.rx.p_data[0]);
       }
       break;
@@ -104,6 +107,25 @@ void clock_initialization()
     NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
 }
 
+static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
+  if (params->packet_type == BLE_PACKET_TYPE_ADV_NONCONN_IND &&
+      params->p_payload[1] == HEARTBEAT_ADV_DATA_TYPE) {
+    toggle_led(LED_BLUE);
+    received_heartbeat((heartbeat_ad_t*)&params->p_payload[2]);
+  }
+}
+
+// Main timer callbacks; from the synchronized clock
+void main_timer_cb() {
+  if (get_clock_time() % 10 == 0) {
+    toggle_led(LED_GREEN);
+    send_heartbeat_packet();
+  }
+}
+
+void offset_timer_cb() {
+  sensor_update();
+}
 
 int main(void)
 {
@@ -134,19 +156,26 @@ int main(void)
   init_params.lfclksrc = MESH_CLOCK_SRC;
   init_params.tx_power = RBC_MESH_TXPOWER_0dBm;
 
-
   uint32_t error_code;
   error_code = rbc_mesh_init(init_params);
-  if (error_code != NRF_SUCCESS) {
-    toggle_led(LED_GREEN);
-  }
   APP_ERROR_CHECK(error_code);
 
+  // Setup handler for watching for heartbeat messages
+  rbc_mesh_packet_peek_cb_set(packet_peek_cb);
+
+  // This has to come after rbc_mesh_init for some reason.  Otherwise we
+  // get a HardFault when rbc_mesh_init is called
   app_config_t app_config;
   config_init();
   get_config(&app_config);
 
-  time_sync_init();
+  // Change channel if needed
+  if (app_config.mesh_channel != 38) {
+    tc_radio_params_set(MESH_ACCESS_ADDR, app_config.mesh_channel);
+  }
+
+  time_sync_init(); // Initializes, but does not start, timer
+  heartbeat_init(); // Inits structures for sending heartbeat
 
   /* Initialize serial ACI */
   if (app_config.serial_enabled) {
@@ -154,15 +183,20 @@ int main(void)
     mesh_aci_app_cmd_handler_set(app_cmd_handler);
   }
 
-  /* Enable handle 1 */
-  error_code = rbc_mesh_value_enable(1);
+  /* Enable test led handle */
+  error_code = rbc_mesh_value_enable(TEST_LED_HANDLE);
   APP_ERROR_CHECK(error_code);
 
-  rbc_mesh_event_t evt;
+  /* Enable our handle */
+  if (app_config.sensor_id > 0) {
+    sensor_init();
+    toggle_led(LED_GREEN);
+  }
 
+  /* Main event loop */
+  rbc_mesh_event_t evt;
   while (true)
   {
-
     for (uint32_t pin = BUTTON_START; pin <= BUTTON_STOP; ++pin)
     {
       if(nrf_gpio_pin_read(pin) == 1)
@@ -172,10 +206,9 @@ int main(void)
         uint32_t led_status = !!((pin - BUTTON_START) & 0x01); /* even buttons are OFF, odd buttons are ON */
 
         mesh_data[0] = led_status;
-        if (rbc_mesh_value_set(1, mesh_data, 1) == NRF_SUCCESS)
-        {
-          led_config(LED_BLUE, led_status);
-        }
+        led_config(LED_BLUE, led_status);
+        error_code = rbc_mesh_value_set(TEST_LED_HANDLE, mesh_data, 1);
+        APP_ERROR_CHECK(error_code);
       }
     }
 
