@@ -1,5 +1,5 @@
-#ifndef __TIME_SYNC_H_
-#define __TIME_SYNC_H_
+#ifndef __SCHEDULER_H_
+#define __SCHEDULER_H_
 
 #include <stdint.h>
 #include "toolchain.h"
@@ -10,7 +10,19 @@ typedef enum {
   CLOCK_SOURCE_SERIAL,
 } clock_source_t;
 
-void time_sync_init();
+typedef enum {
+  SCHEDULER_STATE_STOPPED,
+  SCHEDULER_STATE_SLEEP,
+  SCHEDULER_STATE_BEFORE_HB,
+  SCHEDULER_STATE_AFTER_HB,
+  SCHEDULER_STATE_REPORTING,
+} scheduler_state_t;
+
+#define MAX_EXPECTED_CLOCK_SKEW_MS (10)
+#define HEARTBEAT_WINDOW_MS (100)
+#define TOTAL_RADIO_WINDOW_MS (400)
+
+void scheduler_init();
 void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int16_t clock_version);
 
 // Returns unix epoch
@@ -19,8 +31,4 @@ int32_t get_clock_time();
 // in the heartbeat message
 int16_t get_clock_version();
 
-// Callbacks
-void main_timer_cb();
-void offset_timer_cb();
-
-#endif //__TIME_SYNC_H_
+#endif //__SCHEDULER_H_

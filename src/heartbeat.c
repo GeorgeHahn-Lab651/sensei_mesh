@@ -2,8 +2,8 @@
 #include "mesh_packet.h"
 #include "transport_control.h"
 #include "config.h"
-#include "time_sync.h"
 #include "leds.h"
+#include "scheduler.h"
 
 static tc_tx_config_t m_tx_config;
 
@@ -14,7 +14,7 @@ void heartbeat_init() {
   m_tx_config.tx_power = RBC_MESH_TXPOWER_0dBm;
 }
 
-void send_heartbeat_packet() {
+void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t epoch_ms, uint16_t clock_version) {
   // Send out time sync packet
 
   mesh_packet_t *p_packet;
@@ -34,9 +34,10 @@ void send_heartbeat_packet() {
     p_adv_data->adv_data_type = HEARTBEAT_ADV_DATA_TYPE;  // Normal mesh packets are MESH_ADV_DATA_TYPE (0x16)
 
     heartbeat_ad_t* p_heartbeat_ad = (heartbeat_ad_t*) &p_adv_data->data[0];
-    p_heartbeat_ad->sensor_id = get_sensor_id();
-    p_heartbeat_ad->epoch_time = get_clock_time();
-    p_heartbeat_ad->clock_version = get_clock_version();
+    p_heartbeat_ad->sensor_id = sensor_id;
+    p_heartbeat_ad->epoch_seconds = epoch_seconds;
+    p_heartbeat_ad->epoch_ms = epoch_ms;
+    p_heartbeat_ad->clock_version = clock_version;
 
     if (tc_tx(p_packet, &m_tx_config) != NRF_SUCCESS) {
       toggle_led(LED_RED);
@@ -47,5 +48,5 @@ void send_heartbeat_packet() {
 }
 
 void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad) {
-  set_clock_time(p_heartbeat_ad->epoch_time, 0, CLOCK_SOURCE_RF, p_heartbeat_ad->clock_version);
+  set_clock_time(p_heartbeat_ad->epoch_seconds, p_heartbeat_ad->epoch_ms, CLOCK_SOURCE_RF, p_heartbeat_ad->clock_version);
 }

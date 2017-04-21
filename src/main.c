@@ -13,7 +13,7 @@
 #include "config.h"
 #include "sensor.h"
 #include "transport_control.h"
-#include "time_sync.h"
+#include "scheduler.h"
 #include "heartbeat.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -110,21 +110,8 @@ void clock_initialization()
 static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
   if (params->packet_type == BLE_PACKET_TYPE_ADV_NONCONN_IND &&
       params->p_payload[1] == HEARTBEAT_ADV_DATA_TYPE) {
-    toggle_led(LED_BLUE);
     received_heartbeat((heartbeat_ad_t*)&params->p_payload[2]);
   }
-}
-
-// Main timer callbacks; from the synchronized clock
-void main_timer_cb() {
-  if (get_clock_time() % 10 == 0) {
-    toggle_led(LED_GREEN);
-    send_heartbeat_packet();
-  }
-}
-
-void offset_timer_cb() {
-  sensor_update();
 }
 
 int main(void)
@@ -174,7 +161,7 @@ int main(void)
     tc_radio_params_set(MESH_ACCESS_ADDR, app_config.mesh_channel);
   }
 
-  time_sync_init(); // Initializes, but does not start, timer
+  scheduler_init(); // Initializes, but does not start, timer
   heartbeat_init(); // Inits structures for sending heartbeat
 
   /* Initialize serial ACI */
@@ -190,7 +177,6 @@ int main(void)
   /* Enable our handle */
   if (app_config.sensor_id > 0) {
     sensor_init();
-    toggle_led(LED_GREEN);
   }
 
   /* Main event loop */

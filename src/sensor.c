@@ -14,7 +14,7 @@ void sensor_init() {
   APP_ERROR_CHECK(error_code);
 }
 
-void sensor_update() {
+void report_sensor_data() {
   uint32_t error_code;
   error_code = rbc_mesh_value_set(SENSOR_HANDLE, (uint8_t*)&m_value, sizeof(sensor_value_t));
   APP_ERROR_CHECK(error_code);

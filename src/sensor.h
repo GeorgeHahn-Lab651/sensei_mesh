@@ -21,6 +21,6 @@ typedef __packed_armcc struct
 
 void sensor_init();
 
-void sensor_update();
+void report_sensor_data();
 
 #endif
