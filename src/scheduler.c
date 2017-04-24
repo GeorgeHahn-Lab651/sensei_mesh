@@ -8,6 +8,7 @@
 #include "heartbeat.h"
 #include "sensor.h"
 #include "rbc_mesh.h"
+#include "handles.h"
 
 //  Timer settings
 #define APP_TIMER_PRESCALER             15   // divisor value - 1
@@ -16,6 +17,7 @@
 #define APP_TIMER_MAX_TIMERS            3
 #define APP_TIMER_OP_QUEUE_SIZE         4
 
+static int32_t m_boot_time;
 static int32_t m_current_time;
 static int16_t m_clock_version = 0;
 static app_timer_id_t m_clock_sync_timer_ID;
@@ -25,6 +27,7 @@ static scheduler_state_t m_scheduler_state;
 static prng_t m_rand;
 static uint32_t m_clock_second_start_counter_value;
 
+
 #define MS_TO_TICKS(MS) ((TICKS_PER_100ms * (MS)) / 100)
 #define TICKS_TO_MS(TICKS) (100 * (TICKS) / TICKS_PER_100ms)
 
@@ -32,7 +35,6 @@ static void offset_timer_cb(void * p_context);
 static void delay_to_heartbeat();
 
 #define DEBUG_REGISTER_SIZE (16)
-#define DEBUG_REGISTER_HANDLE (0x1234)
 static uint8_t debug_counter;
 static uint8_t debug_register[DEBUG_REGISTER_SIZE];
 
@@ -46,19 +48,19 @@ static void report_debug_register() {
 
 static void periodic_timer_cb(void * p_context)
 {
-
-  led_config(LED_GREEN, 1);
-  app_timer_cnt_get(&m_clock_second_start_counter_value);
-  m_scheduler_state = SCHEDULER_STATE_BEFORE_HB;
   m_current_time += 1;
-  //rbc_mesh_start();
 
   if (m_current_time % 10 == 0) {
     //report_debug_register();
+    led_config(LED_GREEN, 1);
+    app_timer_cnt_get(&m_clock_second_start_counter_value);
+    m_scheduler_state = SCHEDULER_STATE_BEFORE_HB;
+    rbc_mesh_start();
+
+    // Delay to heartbeat
+    delay_to_heartbeat();
   }
 
-  // Delay to heartbeat
-  delay_to_heartbeat();
 }
 
 static void delay_to_heartbeat() {
@@ -80,7 +82,7 @@ static void delay_to_heartbeat() {
 }
 
 static void do_heartbeat() {
-  led_config(LED_BLUE, 1);
+  //led_config(LED_BLUE, 1);
   uint32_t current_counter;
   app_timer_cnt_get(&current_counter);
   // Modulo wraparound makes this ok
@@ -101,7 +103,7 @@ static void delay_to_reporting() {
 }
 
 static void do_reporting() {
-  led_config(LED_BLUE, 0);
+  //led_config(LED_BLUE, 0);
   report_sensor_data();
 }
 
@@ -118,7 +120,7 @@ static void delay_to_sleep() {
 }
 
 static void do_sleep() {
-  //rbc_mesh_stop();
+  rbc_mesh_stop();
   led_config(LED_GREEN, 0);
 }
 
@@ -188,6 +190,7 @@ void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int
   } else if (clock_source == CLOCK_SOURCE_SERIAL) {
     m_clock_version++;
   }
+  m_boot_time += epoch - m_current_time;
   m_current_time = epoch;
   uint16_t start_delay = (1000 - ms) % 1000;
   app_timer_stop(m_periodic_timer_ID);
@@ -197,6 +200,10 @@ void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int
 
 int32_t get_clock_time() {
   return m_current_time;
+}
+
+int32_t get_uptime() {
+  return m_current_time - m_boot_time;
 }
 
 int16_t get_clock_version() {

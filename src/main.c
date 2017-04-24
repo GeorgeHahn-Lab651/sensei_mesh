@@ -15,6 +15,7 @@
 #include "transport_control.h"
 #include "scheduler.h"
 #include "heartbeat.h"
+#include "handles.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -25,7 +26,6 @@
 #define MESH_INTERVAL_MIN_MS    (100)
 #define MESH_CHANNEL            (38)
 #define MESH_CLOCK_SRC          (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
-#define TEST_LED_HANDLE         (0xfe01)
 
 /** @brief General error handler. */
 static inline void error_loop(void)
