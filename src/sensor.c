@@ -5,19 +5,30 @@
 #include "scheduler.h"
 #include "battery.h"
 #include "handles.h"
+#include "shoe_accel.h"
 #include <app_error.h>
 
 static sensor_value_t m_value;
 
 void sensor_init() {
+  shoe_accel_init();
+
   uint32_t error_code;
   error_code = rbc_mesh_value_enable(SENSOR_HANDLE);
   APP_ERROR_CHECK(error_code);
 }
 
+void sensor_warmup_event() {
+  enable_shoe_accel();
+}
+
 void gather_sensor_data() {
   m_value.uptime = get_uptime();
   m_value.battery = get_battery_adc();
+
+  read_shoe_accel(&m_value.accel_x, &m_value.accel_y, &m_value.accel_z);
+
+  disable_shoe_accel();
 }
 
 void report_sensor_data() {

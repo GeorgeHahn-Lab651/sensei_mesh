@@ -66,11 +66,10 @@ static void periodic_timer_cb(void * p_context)
 static void delay_to_heartbeat() {
   uint16_t random_tx_delay = ((rand_prng_get(&m_rand) & 0x3ff) * HEARTBEAT_WINDOW_MS) / 0x3ff;
   int32_t delay_ticks = MS_TO_TICKS(MAX_EXPECTED_CLOCK_SKEW_MS + random_tx_delay);
-  if (random_tx_delay > 1000) {
-    toggle_led(LED_RED);
-  }
-  add_value_to_debug_register(delay_ticks & 0xff);
-  delay_ticks = 5 + (debug_counter * 2) % 205;
+
+  // This gives some sensors time to come online before data is collected.
+  sensor_warmup_event();
+
   if (delay_ticks > 5) {
     if (app_timer_start(m_offset_timer_ID, delay_ticks, NULL) != NRF_SUCCESS) {
       toggle_led(LED_RED);
