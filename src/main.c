@@ -110,7 +110,7 @@ void clock_initialization()
 static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
   if (params->packet_type == BLE_PACKET_TYPE_ADV_NONCONN_IND &&
       params->p_payload[1] == HEARTBEAT_ADV_DATA_TYPE) {
-    received_heartbeat((heartbeat_ad_t*)&params->p_payload[2]);
+    received_heartbeat((heartbeat_ad_t*)&params->p_payload[2], params->rssi);
   }
 }
 
@@ -178,6 +178,9 @@ int main(void)
   if (app_config.sensor_id > 0) {
     sensor_init();
   }
+
+  // Start clock
+  set_clock_time(0,0,CLOCK_SOURCE_SERIAL,0);
 
   /* Main event loop */
   rbc_mesh_event_t evt;

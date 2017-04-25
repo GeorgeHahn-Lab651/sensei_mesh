@@ -4,13 +4,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "toolchain.h"
+#include "proximity.h"
 
 #define MAX_SENSOR_ID = 64
 
 typedef __packed_armcc struct
 {
     uint8_t proximity_ids[MAX_PROXIMITY_TRACKING_COUNT];
-    uint8_t proximity_rss[MAX_PROXIMITY_TRACKING_COUNT];
+    uint8_t proximity_rssi[MAX_PROXIMITY_TRACKING_COUNT];
     uint8_t battery;
     int8_t accel_x;
     int8_t accel_y;

@@ -28,6 +28,9 @@ void gather_sensor_data() {
 
   read_shoe_accel(&m_value.accel_x, &m_value.accel_y, &m_value.accel_z);
 
+  proximity_get_strongest_signals(m_value.proximity_ids, m_value.proximity_rssi, MAX_PROXIMITY_TRACKING_COUNT);
+  proximity_values_reset();
+
   disable_shoe_accel();
 }
 

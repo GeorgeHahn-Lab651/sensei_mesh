@@ -4,6 +4,7 @@
 #include "config.h"
 #include "leds.h"
 #include "scheduler.h"
+#include "proximity.h"
 
 static tc_tx_config_t m_tx_config;
 
@@ -47,6 +48,7 @@ void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t e
   }
 }
 
-void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad) {
+void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad, uint8_t rssi) {
   set_clock_time(p_heartbeat_ad->epoch_seconds, p_heartbeat_ad->epoch_ms, CLOCK_SOURCE_RF, p_heartbeat_ad->clock_version);
+  proximity_add_entry(p_heartbeat_ad->sensor_id, rssi);
 }

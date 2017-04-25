@@ -7,6 +7,12 @@
 #define LED_GREEN 1
 #define LED_BLUE 2
 
+#define DBG_TICK_PIN(x) NRF_GPIO->OUTSET = (1 << (x)); \
+                    __NOP();\
+                    __NOP();\
+                    NRF_GPIO->OUTCLR = (1 << (x))
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif

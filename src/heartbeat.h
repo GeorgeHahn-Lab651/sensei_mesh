@@ -18,6 +18,6 @@ typedef __packed_armcc struct
 
 void heartbeat_init();
 void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t current_ms, uint16_t clock_version);
-void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad);
+void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad, uint8_t rssi);
 
 #endif // HEARTBEAT_H

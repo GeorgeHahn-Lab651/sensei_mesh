@@ -23,6 +23,10 @@ typedef enum {
 #define TOTAL_RADIO_WINDOW_MS (900)
 
 void scheduler_init();
+
+// If the source is CLOCK_SOURCE_SERIAL, the clock time will be updated unconditionally
+// If the source is CLOCK_SOURCE_RF, the version will be checked, and if this is
+// a newer version, then the clock will be updated.
 void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int16_t clock_version);
 
 // Returns unix epoch

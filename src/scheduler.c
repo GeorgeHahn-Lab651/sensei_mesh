@@ -50,12 +50,12 @@ static void periodic_timer_cb(void * p_context)
 {
   m_current_time += 1;
 
-  if (m_current_time % 10 == 0) {
+  if (true /*m_current_time % 10 == 0 */) {
     //report_debug_register();
     led_config(LED_GREEN, 1);
     app_timer_cnt_get(&m_clock_second_start_counter_value);
     m_scheduler_state = SCHEDULER_STATE_BEFORE_HB;
-    rbc_mesh_start();
+    //rbc_mesh_start();
 
     // Delay to heartbeat
     delay_to_heartbeat();
@@ -81,7 +81,7 @@ static void delay_to_heartbeat() {
 }
 
 static void do_heartbeat() {
-  //led_config(LED_BLUE, 1);
+  DBG_TICK_PIN(LED_RED + LED_START);
   uint32_t current_counter;
   app_timer_cnt_get(&current_counter);
   // Modulo wraparound makes this ok
@@ -119,7 +119,7 @@ static void delay_to_sleep() {
 }
 
 static void do_sleep() {
-  rbc_mesh_stop();
+  //rbc_mesh_stop();
   led_config(LED_GREEN, 0);
 }
 
