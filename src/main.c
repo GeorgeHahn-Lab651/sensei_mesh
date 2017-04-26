@@ -129,6 +129,9 @@ int main(void)
   softdevice_sys_evt_handler_set(sys_evt_dispatch);
 
   LEDS_CONFIGURE(LEDS_MASK);
+  // Debug pins
+  nrf_gpio_cfg_output(5);
+  nrf_gpio_cfg_output(6);
 
 
   // if (NRF_CLOCK->LFCLKSRC == (CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos)) {

@@ -2,7 +2,7 @@
 #include "app_cmd.h"
 #include "nrf_error.h"
 #include "leds.h"
-#include "time_sync.h"
+#include "scheduler.h"
 #include "config.h"
 
 uint16_t app_cmd_handler(uint8_t *data, uint8_t len, uint8_t *response, uint8_t *response_length) {

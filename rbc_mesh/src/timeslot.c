@@ -330,13 +330,13 @@ static nrf_radio_signal_callback_return_param_t* radio_signal_callback(uint8_t s
                     ts_extend(m_negotiate_timeslot_length);
                 }
             }
-            else
-            {
-                if (m_timeslot_length + m_negotiate_timeslot_length < TIMESLOT_MAX_LENGTH_US)
-                {
-                    ts_extend(m_negotiate_timeslot_length);
-                }
-            }
+            // else
+            // {
+            //     if (m_timeslot_length + m_negotiate_timeslot_length < TIMESLOT_MAX_LENGTH_US)
+            //     {
+            //         ts_extend(m_negotiate_timeslot_length);
+            //     }
+            // }
 
             break;
 
