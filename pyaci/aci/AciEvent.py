@@ -1,9 +1,12 @@
 import logging
 from aci import AciCommand
+from struct import *
 
 MAX_DATA_LENGTH = 30
 
 def AciEventDeserialize(pkt):
+
+
     eventLUT = {
         0x81: AciDeviceStarted,
         0x82: AciEchoRsp,
@@ -11,7 +14,9 @@ def AciEventDeserialize(pkt):
         0xB3: AciEventNew,
         0xB4: AciEventUpdate,
         0xB5: AciEventConflicting,
-        0xB6: AciEventTX
+        0xB6: AciEventTX,
+        0x60: AciEventAppEvt
+
     }
 
     opcode = pkt[1]
@@ -119,3 +124,17 @@ class AciEventTX(AciEventNew):
     #OpCode = 0xB6
     def __init__(self,pkt):
         super(AciEventTX, self).__init__(pkt)
+
+class AciEventAppEvt(AciEventPkt):
+    APP_EVENT_OPCODE_HEARTBEAT = 0x01
+
+    #OpCode = 0x60
+    def __init__(self,pkt):
+        super(AciEventAppEvt, self).__init__(pkt)
+        self.app_opcode = self.Data[0]
+
+    def __repr__(self):
+        if self.app_opcode == AciEventAppEvt.APP_EVENT_OPCODE_HEARTBEAT:
+            #(sensor_id, epoch_seconds, epoch_ms, clock_version) = )
+            return str.format("Heartbeat: sensor_id:%d epoch:%d ms:%d clock_version:%d" %(unpack('<BiHH', bytearray(self.Data[1:]))))
+        #if self.app_opcode == APP_EVENT_OPCODE_HEARTBEAT:

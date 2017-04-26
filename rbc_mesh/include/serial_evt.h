@@ -37,6 +37,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dfu_types_mesh.h"
 
 
+#define APP_EVENT_DATA_SIZE (29)
+
 typedef __packed_armcc enum
 {
     SERIAL_EVT_OPCODE_DEVICE_STARTED        = 0x81,
@@ -46,7 +48,8 @@ typedef __packed_armcc enum
     SERIAL_EVT_OPCODE_EVENT_UPDATE          = 0xB4,
     SERIAL_EVT_OPCODE_EVENT_CONFLICTING     = 0xB5,
     SERIAL_EVT_OPCODE_EVENT_TX              = 0xB6,
-    SERIAL_EVT_OPCODE_DFU                   = 0x78
+    SERIAL_EVT_OPCODE_DFU                   = 0x78,
+    SERIAL_EVT_OPCODE_APP_EVT               = 0x60
 } __packed_gcc serial_evt_opcode_t;
 
 
@@ -166,6 +169,11 @@ typedef __packed_armcc struct
 
 typedef __packed_armcc struct
 {
+    uint8_t app_event_data[APP_EVENT_DATA_SIZE];
+} __packed_gcc serial_evt_params_app_evt_t;
+
+typedef __packed_armcc struct
+{
     uint8_t length;
     uint8_t opcode;
     __packed_armcc union
@@ -178,6 +186,7 @@ typedef __packed_armcc struct
         serial_evt_params_event_tx_t                event_tx;
         serial_evt_params_event_device_started_t    device_started;
         serial_evt_params_dfu_t                     dfu;
+        serial_evt_params_app_evt_t                 app_evt;
 	} __packed_gcc params;
 } __packed_gcc serial_evt_t;
 

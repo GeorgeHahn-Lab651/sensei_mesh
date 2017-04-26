@@ -10,7 +10,7 @@
 typedef __packed_armcc struct
 {
   uint8_t sensor_id;
-  uint32_t epoch_seconds;
+  int32_t epoch_seconds;
   uint16_t epoch_ms;
   uint16_t clock_version;
 } __packed_gcc heartbeat_ad_t;

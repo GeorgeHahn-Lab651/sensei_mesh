@@ -25,6 +25,8 @@ typedef enum {
 
 void scheduler_init();
 
+void start_clock(uint16_t start_delay);
+
 // If the source is CLOCK_SOURCE_SERIAL, the clock time will be updated unconditionally
 // If the source is CLOCK_SOURCE_RF, the version will be checked, and if this is
 // a newer version, then the clock will be updated.

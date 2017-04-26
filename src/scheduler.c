@@ -149,7 +149,7 @@ static void clock_sync_cb(void * p_context) {
   start_periodic_timer();
 }
 
-static void start_timer(uint16_t start_delay) {
+void start_clock(uint16_t start_delay) {
   int32_t start_delay_ticks = (start_delay * (TICKS_PER_SECOND/1000.0));
   if (start_delay_ticks > 5) {
     app_timer_start(m_clock_sync_timer_ID, start_delay_ticks, NULL);
@@ -186,7 +186,7 @@ void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int
   uint16_t start_delay = (1000 - ms) % 1000;
   app_timer_stop(m_periodic_timer_ID);
   app_timer_stop(m_clock_sync_timer_ID);
-  start_timer(start_delay);
+  start_clock(start_delay);
 }
 
 int32_t get_clock_time() {
@@ -198,5 +198,5 @@ int32_t get_uptime() {
 }
 
 bool clock_is_synchronized() {
-  return m_current_time - m_last_sync < 60 * 60;
+  return m_last_sync > 0 && (m_current_time - m_last_sync) < (60 * 60);
 }

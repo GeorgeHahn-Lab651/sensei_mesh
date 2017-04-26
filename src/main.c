@@ -183,7 +183,7 @@ int main(void)
   }
 
   // Start clock
-  set_clock_time(0,0,CLOCK_SOURCE_SERIAL,0);
+  start_clock(0);
 
   /* Main event loop */
   rbc_mesh_event_t evt;
