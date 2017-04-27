@@ -18,8 +18,8 @@
 #define CLEAR_PIN(x) NRF_GPIO->OUTCLR = (1 << (x))
 
 #define TOGGLE_PIN(x) do { uint32_t gpio_state = NRF_GPIO->OUT;      \
-                              NRF_GPIO->OUTSET = ((1<<x) & ~gpio_state); \
-                              NRF_GPIO->OUTCLR = ((1<<x) & gpio_state); } while (0)
+                              NRF_GPIO->OUTSET = ((1<<(x)) & ~gpio_state); \
+                              NRF_GPIO->OUTCLR = ((1<<(x)) & gpio_state); } while (0)
 
 
 #ifdef __cplusplus

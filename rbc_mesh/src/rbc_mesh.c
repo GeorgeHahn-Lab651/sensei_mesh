@@ -39,7 +39,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mesh_gatt.h"
 #include "dfu_app.h"
 #include "fifo.h"
-#include "leds.h"
 
 #include "app_error.h"
 #include "nrf_sdm.h"

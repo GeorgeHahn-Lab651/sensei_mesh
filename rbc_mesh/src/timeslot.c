@@ -39,7 +39,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "transport_control.h"
 #include "event_handler.h"
 #include "rbc_mesh_common.h"
-#include "leds.h"
 
 #ifdef MESH_DFU
 #include "dfu_app.h"

@@ -13,4 +13,5 @@ void proximity_values_reset();
 // count = length of sensor_ids and rssi_values arrays
 uint8_t proximity_get_strongest_signals(uint8_t *sensor_ids, uint8_t *rssi_values, uint8_t output_array_size);
 
+
 #endif //PROXIMITY_H

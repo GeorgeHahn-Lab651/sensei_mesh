@@ -16,7 +16,7 @@ typedef __packed_armcc struct
 } __packed_gcc heartbeat_ad_t;
 
 
-void heartbeat_init();
+void heartbeat_init(uint8_t channel);
 void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t current_ms, uint16_t clock_version);
 void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad, uint8_t rssi);
 

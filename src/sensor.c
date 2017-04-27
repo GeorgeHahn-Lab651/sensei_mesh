@@ -25,6 +25,7 @@ void sensor_warmup_event() {
 void gather_sensor_data() {
   m_value.uptime = get_uptime();
   m_value.battery = get_battery_adc();
+  //m_value.status = ??
 
   read_shoe_accel(&m_value.accel_x, &m_value.accel_y, &m_value.accel_z);
 

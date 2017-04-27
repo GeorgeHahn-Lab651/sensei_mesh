@@ -53,14 +53,13 @@ static void periodic_timer_cb(void * p_context)
   DBG_TICK_PIN(6);
 
 
-  if (m_current_time % 10 == 0) {
+  if (1 /*m_current_time % 10 == 0*/) {
     //report_debug_register();
-    led_config(LED_GREEN, 1);
+    //led_config(LED_GREEN, 1);
     app_timer_cnt_get(&m_clock_second_start_counter_value);
     m_scheduler_state = SCHEDULER_STATE_BEFORE_HB;
     rbc_mesh_start();
 
-    toggle_led(LED_RED);
     delay_to_heartbeat();
   }
 }
@@ -78,7 +77,7 @@ static void delay_to_heartbeat() {
 }
 
 static void do_heartbeat() {
-  toggle_led(LED_RED);
+  //led_config(LED_GREEN, 0);
   uint32_t current_counter;
   app_timer_cnt_get(&current_counter);
   // Modulo wraparound makes this ok
@@ -95,6 +94,7 @@ static void delay_to_reporting() {
 }
 
 static void do_reporting() {
+  //led_config(LED_GREEN, 1);
   report_sensor_data();
 }
 
@@ -112,7 +112,7 @@ static void delay_to_sleep() {
 
 static void do_sleep() {
   rbc_mesh_stop();
-  led_config(LED_GREEN, 0);
+  //led_config(LED_GREEN, 0);
 }
 
 static void offset_timer_cb(void * p_context) {
@@ -184,6 +184,7 @@ void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int
   } else if (clock_source == CLOCK_SOURCE_SERIAL) {
     m_clock_version++;
   }
+  TOGGLE_PIN(LED_BLUE + LED_START);
   m_boot_time += epoch - m_current_time;
   m_last_sync = m_current_time = epoch;
   uint16_t start_delay = (1000 - ms) % 1000;

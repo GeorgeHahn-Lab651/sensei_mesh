@@ -9,15 +9,16 @@
 
 static tc_tx_config_t m_tx_config;
 
-void heartbeat_init() {
+void heartbeat_init(uint8_t channel) {
   m_tx_config.alt_access_address = false;
-  m_tx_config.first_channel = 38;
+  m_tx_config.first_channel = channel;
   m_tx_config.channel_map = 1;
   m_tx_config.tx_power = RBC_MESH_TXPOWER_0dBm;
 }
 
 void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t epoch_ms, uint16_t clock_version) {
   // Send out time sync packet
+  //TOGGLE_PIN(LED_RED + LED_START);
 
   mesh_packet_t *p_packet;
   if (mesh_packet_acquire(&p_packet)) {
@@ -51,7 +52,6 @@ void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t e
 
 void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad, uint8_t rssi) {
   app_evt_t event;
-  TOGGLE_PIN(6);
   set_clock_time(p_heartbeat_ad->epoch_seconds, p_heartbeat_ad->epoch_ms, CLOCK_SOURCE_RF, p_heartbeat_ad->clock_version);
   proximity_add_entry(p_heartbeat_ad->sensor_id, rssi);
 

@@ -24,7 +24,7 @@
 
 #define MESH_ACCESS_ADDR        (0xA555410C)
 #define MESH_INTERVAL_MIN_MS    (100)
-#define MESH_CHANNEL            (38)
+#define DEFAULT_MESH_CHANNEL    (38)
 #define MESH_CLOCK_SRC          (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
 
 /** @brief General error handler. */
@@ -70,7 +70,7 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
     case RBC_MESH_EVENT_TYPE_NEW_VAL:
     case RBC_MESH_EVENT_TYPE_UPDATE_VAL:
       if (p_evt->params.rx.value_handle == TEST_LED_HANDLE) {
-        led_config(LED_BLUE, p_evt->params.rx.p_data[0]);
+        //led_config(LED_BLUE, p_evt->params.rx.p_data[0]);
       }
       break;
     case RBC_MESH_EVENT_TYPE_TX:
@@ -142,14 +142,14 @@ int main(void)
   rbc_mesh_init_params_t init_params;
   init_params.access_addr = MESH_ACCESS_ADDR;
   init_params.interval_min_ms = MESH_INTERVAL_MIN_MS;
-  init_params.channel = MESH_CHANNEL;
+  init_params.channel = DEFAULT_MESH_CHANNEL;
   init_params.lfclksrc = MESH_CLOCK_SRC;
   init_params.tx_power = RBC_MESH_TXPOWER_0dBm;
 
   uint32_t error_code;
   error_code = rbc_mesh_init(init_params);
   APP_ERROR_CHECK(error_code);
-  led_config(LED_GREEN, 1);
+  //led_config(LED_GREEN, 1);
 
   // Setup handler for watching for heartbeat messages
   rbc_mesh_packet_peek_cb_set(packet_peek_cb);
@@ -161,13 +161,13 @@ int main(void)
   get_config(&app_config);
 
   // Change channel if needed
-  if (app_config.mesh_channel != 38) {
+  if (app_config.mesh_channel != DEFAULT_MESH_CHANNEL) {
     tc_radio_params_set(MESH_ACCESS_ADDR, app_config.mesh_channel);
   }
 
   scheduler_init(app_config.sleep_enabled); // Initializes, but does not start, clock
 
-  heartbeat_init(); // Inits structures for sending heartbeat
+  heartbeat_init(app_config.mesh_channel); // Inits structures for sending heartbeat
 
   /* Initialize serial ACI */
   if (app_config.serial_enabled) {
@@ -200,7 +200,7 @@ int main(void)
         uint32_t led_status = !!((pin - BUTTON_START) & 0x01); /* even buttons are OFF, odd buttons are ON */
 
         mesh_data[0] = led_status;
-        led_config(LED_BLUE, led_status);
+        //led_config(LED_BLUE, led_status);
         error_code = rbc_mesh_value_set(TEST_LED_HANDLE, mesh_data, 1);
         APP_ERROR_CHECK(error_code);
       }
