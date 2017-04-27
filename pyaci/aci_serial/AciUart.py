@@ -3,10 +3,13 @@ import logging
 import traceback
 import threading
 import collections
+from queue import *
+
+
 from serial import Serial
 from aci import AciEvent, AciCommand
 
-EVT_Q_BUF = 16
+EVT_Q_BUF = 32
 
 class AciDevice(object):
     def __init__(self, device_name):
@@ -67,7 +70,7 @@ class AciDevice(object):
 
 class AciUart(threading.Thread, AciDevice):
     def __init__(self, port, baudrate=115200, device_name=None, rtscts=False):
-        self.events_queue = collections.deque(maxlen = EVT_Q_BUF)
+        self.events_queue = Queue(maxsize = EVT_Q_BUF)
         threading.Thread.__init__(self)
         if not device_name:
             device_name = port
@@ -113,7 +116,10 @@ class AciUart(threading.Thread, AciDevice):
                 parsedPacket = None
 
             if parsedPacket:
-                self.events_queue.append(parsedPacket)
+                try:
+                    self.events_queue.put_nowait(parsedPacket)
+                except Full:
+                    logging.error('Packet queue full... dropping packet')
                 logging.debug('parsedPacket %r %s', parsedPacket, parsedPacket)
                 self.ProcessPacket(parsedPacket)
 

@@ -24,7 +24,6 @@
 
 #define MESH_ACCESS_ADDR        (0xA555410C)
 #define MESH_INTERVAL_MIN_MS    (100)
-#define DEFAULT_MESH_CHANNEL    (38)
 #define MESH_CLOCK_SRC          (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
 
 /** @brief General error handler. */
@@ -161,13 +160,13 @@ int main(void)
   rbc_mesh_packet_peek_cb_set(packet_peek_cb);
 
   // Change channel if needed
-  if (app_config.mesh_channel != DEFAULT_MESH_CHANNEL) {
-    tc_radio_params_set(MESH_ACCESS_ADDR, app_config.mesh_channel);
-  }
+  // if (app_config.mesh_channel != DEFAULT_MESH_CHANNEL) {
+  //   tc_radio_params_set(MESH_ACCESS_ADDR, app_config.mesh_channel);
+  // }
 
   scheduler_init(app_config.sleep_enabled); // Initializes, but does not start, clock
 
-  heartbeat_init(app_config.mesh_channel); // Inits structures for sending heartbeat
+  heartbeat_init(DEFAULT_MESH_CHANNEL); // Inits structures for sending heartbeat
 
   /* Initialize serial ACI */
   if (app_config.serial_enabled) {

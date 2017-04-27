@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CHANNEL=38
+CHANNEL=39
 
 make || exit -1
 

@@ -53,7 +53,7 @@ bool config_init() {
 static void init_config_to_defaults() {
   m_config.sensor_id = 0;
   m_config.serial_enabled = 1;
-  m_config.mesh_channel = 38;
+  m_config.mesh_channel = DEFAULT_MESH_CHANNEL;
   m_config.sleep_enabled = 1;
 }
 

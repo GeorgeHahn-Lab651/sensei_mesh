@@ -6,6 +6,7 @@ from argparse import ArgumentParser
 from traitlets import config
 from aci import AciCommand
 from aci_serial import AciUart
+from queue import *
 import time
 import sensei_cmd
 
@@ -17,7 +18,13 @@ class Interactive(object):
         self.acidev.stop()
 
     def EventsReceivedGet(self):
-        return self.acidev.events_queue
+        events = []
+        while 1:
+            try:
+                events.append(self.acidev.events_queue.get_nowait())
+            except Empty:
+                break
+        return events
 
     def DevicePortGet(self):
         return self.acidev.serial.port

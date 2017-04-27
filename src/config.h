@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include "toolchain.h"
 
+#define DEFAULT_MESH_CHANNEL    (38)
+
 typedef __packed_armcc struct
 {
     uint8_t sensor_id;
