@@ -62,7 +62,7 @@ class AciEventPkt(object):
                 logging.error('Packet size must be > 1, packet contents: %s', str(pkt))
 
     def __repr__(self):
-        return str.format("I am %s and my Length is %d, OpCode is 0x%02x and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.Data))
+        return str.format("%s length:%d opcode:0x%02x data:%s" %(self.__class__.__name__, self.Len, self.OpCode, self.Data))
 
 class AciDeviceStarted(AciEventPkt):
     #OpCode = 0x81
@@ -76,7 +76,7 @@ class AciDeviceStarted(AciEventPkt):
             self.DataCreditAvailable = pkt[4]
 
     def __repr__(self):
-        return str.format("I am %s and my Length is %d, OpCode is 0x%02x, OperatingMode is 0x%02x, HWError is 0x%02x, and DataCreditAvailable is 0x%02x" %(self.__class__.__name__, self.Len, self.OpCode, self.OperatingMode, self.HWError, self.DataCreditAvailable))
+        return str.format("%s length:%d opcode:0x%02x operating_mode:0x%02x hw_error:0x%02x data_credit_available:0x%02x" %(self.__class__.__name__, self.Len, self.OpCode, self.OperatingMode, self.HWError, self.DataCreditAvailable))
 
 class AciEchoRsp(AciEventPkt):
     #OpCode = 0x82
@@ -95,7 +95,21 @@ class AciCmdRsp(AciEventPkt):
             self.Data = pkt[4:]
 
     def __repr__(self):
-        return str.format("I am %s and my Length is %d, OpCode is 0x%02x, CommandOpCode is %s, StatusCode is %s, and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, AciCommand.AciCommandLookUp(self.CommandOpCode), AciStatusLookUp(self.StatusCode), self.Data))
+        return str.format("%s length:%d opcode:0x%02x command_opcode:%s status_code:%s data:%s" %(self.__class__.__name__, self.Len, self.OpCode, AciCommand.AciCommandLookUp(self.CommandOpCode), AciStatusLookUp(self.StatusCode), self.Data))
+
+class SensorValues(object):
+    def __init__(self, sensor_id, data):
+        self.sensor_id = sensor_id
+        self.proximity_ids = data[0:5]
+        self.proximity_rssi = data[5:10]
+        self.battery = data[10]
+        self.accel_x = data[11]
+        self.accel_y = data[12]
+        self.accel_z = data[13]
+        self.status = data[14]
+        self.uptime = unpack('<i',bytearray(data[15:19]))[0]
+    def __repr__(self):
+        return "SensorValues: sensor_id:{sensor_id} proximity_ids:{proximity_ids} proximity_rssi:{proximity_rssi} battery:{battery}, accel:({accel_x}, {accel_y}, {accel_z}), status:{status}, uptime:{uptime}".format(**vars(self))
 
 class AciEventNew(AciEventPkt):
     #OpCode = 0xB3
@@ -108,7 +122,10 @@ class AciEventNew(AciEventPkt):
             self.Data = pkt[4:]
 
     def __repr__(self):
-        return str.format("I am %s and my Length is %d, OpCode is 0x%02x, ValueHandle is 0x%04x, and Data is %s" %(self.__class__.__name__, self.Len, self.OpCode, self.ValueHandle, self.Data))
+        if self.ValueHandle >> 8 == 0x01:
+            return str.format("%s %s" %(self.__class__.__name__, SensorValues(self.ValueHandle & 0xff, self.Data)))
+        else:
+            return str.format("%s length:%d opcode:0x%02x value_handle:0x%04x data:%s" %(self.__class__.__name__, self.Len, self.OpCode, self.ValueHandle, self.Data))
 
 class AciEventUpdate(AciEventNew):
     #OpCode = 0xB4
@@ -125,6 +142,14 @@ class AciEventTX(AciEventNew):
     def __init__(self,pkt):
         super(AciEventTX, self).__init__(pkt)
 
+class HeartbeatMsg(object):
+    def __init__(self, data):
+        (self.sensor_id, self.epoch_seconds, self.epoch_ms, self.clock_version) = unpack('<BiHH', bytearray(data))
+
+    def __repr__(self):
+        return "Heartbeat: sensor_id:{sensor_id} epoch:{epoch_seconds} ms:{epoch_ms} clock_version:{clock_version}".format(**vars(self))
+
+
 class AciEventAppEvt(AciEventPkt):
     APP_EVENT_OPCODE_HEARTBEAT = 0x01
 
@@ -135,6 +160,5 @@ class AciEventAppEvt(AciEventPkt):
 
     def __repr__(self):
         if self.app_opcode == AciEventAppEvt.APP_EVENT_OPCODE_HEARTBEAT:
-            #(sensor_id, epoch_seconds, epoch_ms, clock_version) = )
-            return str.format("Heartbeat: sensor_id:%d epoch:%d ms:%d clock_version:%d" %(unpack('<BiHH', bytearray(self.Data[1:]))))
+            return repr(HeartbeatMsg(self.Data[1:]))
         #if self.app_opcode == APP_EVENT_OPCODE_HEARTBEAT:

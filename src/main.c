@@ -149,6 +149,7 @@ int main(void)
   uint32_t error_code;
   error_code = rbc_mesh_init(init_params);
   APP_ERROR_CHECK(error_code);
+  led_config(LED_GREEN, 1);
 
   // Setup handler for watching for heartbeat messages
   rbc_mesh_packet_peek_cb_set(packet_peek_cb);
@@ -165,7 +166,7 @@ int main(void)
   }
 
   scheduler_init(app_config.sleep_enabled); // Initializes, but does not start, clock
-  
+
   heartbeat_init(); // Inits structures for sending heartbeat
 
   /* Initialize serial ACI */

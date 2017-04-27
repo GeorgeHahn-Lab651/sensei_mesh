@@ -51,8 +51,8 @@ void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t e
 
 void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad, uint8_t rssi) {
   app_evt_t event;
+  TOGGLE_PIN(6);
   set_clock_time(p_heartbeat_ad->epoch_seconds, p_heartbeat_ad->epoch_ms, CLOCK_SOURCE_RF, p_heartbeat_ad->clock_version);
-  DBG_TICK_PIN(6);
   proximity_add_entry(p_heartbeat_ad->sensor_id, rssi);
 
   event.opcode = APP_EVT_OPCODE_HEARTBEAT;

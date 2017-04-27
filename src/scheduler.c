@@ -55,7 +55,7 @@ static void periodic_timer_cb(void * p_context)
 
   if (m_current_time % 10 == 0) {
     //report_debug_register();
-    //led_config(LED_GREEN, 1);
+    led_config(LED_GREEN, 1);
     app_timer_cnt_get(&m_clock_second_start_counter_value);
     m_scheduler_state = SCHEDULER_STATE_BEFORE_HB;
     rbc_mesh_start();
@@ -112,7 +112,7 @@ static void delay_to_sleep() {
 
 static void do_sleep() {
   rbc_mesh_stop();
-  //led_config(LED_GREEN, 0);
+  led_config(LED_GREEN, 0);
 }
 
 static void offset_timer_cb(void * p_context) {
