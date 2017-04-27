@@ -79,8 +79,8 @@ class Interactive(object):
     def setTime(self):
         self.runCommand(sensei_cmd.SetTime())
 
-    def setConfig(self, sensor_id, serial_enabled, mesh_channel):
-        self.runCommand(sensei_cmd.SetConfig(sensor_id, serial_enabled, mesh_channel))
+    def setConfig(self, sensor_id, serial_enabled, mesh_channel, sleep_enabled):
+        self.runCommand(sensei_cmd.SetConfig(sensor_id, serial_enabled, mesh_channel, sleep_enabled))
 
     def getConfig(self):
         self.runCommand(sensei_cmd.GetConfig())

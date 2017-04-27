@@ -23,7 +23,7 @@ typedef enum {
 #define HEARTBEAT_WINDOW_MS (40)
 #define TOTAL_RADIO_WINDOW_MS (900)
 
-void scheduler_init();
+void scheduler_init(bool sleep_enabled);
 
 void start_clock(uint16_t start_delay);
 

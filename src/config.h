@@ -10,6 +10,7 @@ typedef __packed_armcc struct
     uint8_t sensor_id;
     uint8_t serial_enabled;
     uint8_t mesh_channel;
+    uint8_t sleep_enabled;
 } __packed_gcc app_config_t;
 
 // Returns true on success

@@ -24,10 +24,10 @@ RBC_MESH  		:= rbc_mesh
 LINKER_SCRIPT := $(SIMBLEE_BASE)/variants/Simblee/linker_scripts/gcc/Simblee.ld
 RFD_LOADER 		:= $(SIMBLEE_BASE)/RFDLoader_osx
 #SERIAL_PORT 	:= /dev/cu.usbserial-DN00D34P  # left
-#SERIAL_PORT 	:= /dev/cu.usbserial-DN00CSZ7  # right
+SERIAL_PORT 	:= /dev/cu.usbserial-DN00CSZ7  # right
 #SERIAL_PORT 	:= /dev/cu.usbserial-A105RB12
 #SERIAL_PORT   := /dev/cu.usbserial-FTZ86FTC  # tag-connect
-SERIAL_PORT   := /dev/cu.usbserial-DO00C2G2  # Breadboard setup
+#SERIAL_PORT   := /dev/cu.usbserial-DO00C2G2  # Breadboard setup
 
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
 	SERIAL_STRING := "_serial"

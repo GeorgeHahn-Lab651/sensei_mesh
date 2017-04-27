@@ -19,13 +19,15 @@ class SetTime(object):
 class SetConfig(object):
     OpCode = 0x03
 
-    def __init__(self, sensor_id=0, serial_enabled=False, mesh_channel=38):
+    def __init__(self, sensor_id=0, serial_enabled=False, mesh_channel=38, sleep_enabled=True):
         self.sensor_id = sensor_id
         self.serial_enabled = serial_enabled
-        self.mesh_channel=mesh_channel
+        self.mesh_channel = mesh_channel
+        self.sleep_enabled = sleep_enabled
+
 
     def serialize(self):
-        return struct.pack("BBBB", self.OpCode, self.sensor_id, self.serial_enabled, self.mesh_channel)
+        return struct.pack("BBBBB", self.OpCode, self.sensor_id, self.serial_enabled, self.mesh_channel, self.sleep_enabled)
 
 class GetConfig(object):
     OpCode = 0x04

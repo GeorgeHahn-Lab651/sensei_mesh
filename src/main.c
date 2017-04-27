@@ -164,7 +164,8 @@ int main(void)
     tc_radio_params_set(MESH_ACCESS_ADDR, app_config.mesh_channel);
   }
 
-  scheduler_init(); // Initializes, but does not start, timer
+  scheduler_init(app_config.sleep_enabled); // Initializes, but does not start, clock
+  
   heartbeat_init(); // Inits structures for sending heartbeat
 
   /* Initialize serial ACI */

@@ -9,13 +9,26 @@
 #define APP_CONFIG_BLOCK 0
 #define APP_CONFIG_OFFSET 0
 
+#define APP_CONFIG_STORAGE_SIZE ((sizeof(app_config_t)/16 + 1) * 16)
+
 static pstorage_handle_t m_storage_handle;
 static app_config_t m_config;
 static bool m_loaded = false;
 
 static void m_storage_callback(pstorage_handle_t *p_handle, uint8_t op_code, uint32_t result, uint8_t *p_data, uint32_t data_len) {
-  if (op_code == PSTORAGE_STORE_OP_CODE && result == NRF_SUCCESS) {
-    toggle_led(LED_GREEN);
+  static pstorage_handle_t block;
+  switch (op_code) {
+    case PSTORAGE_STORE_OP_CODE:
+      if (result == NRF_SUCCESS) {
+        toggle_led(LED_BLUE);
+      }
+      break;
+    case PSTORAGE_CLEAR_OP_CODE:
+      // After clearing, we write the config
+      if (pstorage_block_identifier_get(&m_storage_handle, APP_CONFIG_BLOCK, &block) == NRF_SUCCESS) {
+        pstorage_store(&block, (uint8_t*)&m_config, APP_CONFIG_STORAGE_SIZE, APP_CONFIG_OFFSET);
+      }
+      break;
   }
 }
 
@@ -41,6 +54,7 @@ static void init_config_to_defaults() {
   m_config.sensor_id = 0;
   m_config.serial_enabled = 1;
   m_config.mesh_channel = 38;
+  m_config.sleep_enabled = 1;
 }
 
 static bool ensure_config_loaded() {
@@ -78,8 +92,7 @@ uint32_t set_config(app_config_t *config) {
   if (error_code != NRF_SUCCESS) {
     return error_code;
   }
-  // Size must be word-aligned
-  error_code = pstorage_store(&block, (uint8_t*)&m_config, ((sizeof(app_config_t)/16 + 1) * 16), APP_CONFIG_OFFSET);
+  error_code = pstorage_clear(&block, APP_CONFIG_STORAGE_SIZE);
   return error_code;
 }
 

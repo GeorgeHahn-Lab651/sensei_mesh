@@ -10,6 +10,8 @@
 #define DBG_TICK_PIN(x) NRF_GPIO->OUTSET = (1 << (x)); \
                     __NOP();\
                     __NOP();\
+                    __NOP();\
+                    __NOP();\
                     NRF_GPIO->OUTCLR = (1 << (x))
 
 

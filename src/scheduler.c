@@ -25,9 +25,9 @@ static app_timer_id_t m_clock_sync_timer_ID;
 static app_timer_id_t m_offset_timer_ID;
 static app_timer_id_t m_periodic_timer_ID;
 static scheduler_state_t m_scheduler_state;
+static bool m_sleep_enabled = true;
 static prng_t m_rand;
 static uint32_t m_clock_second_start_counter_value;
-
 
 #define MS_TO_TICKS(MS) ((TICKS_PER_100ms * (MS)) / 100)
 #define TICKS_TO_MS(TICKS) (100 * (TICKS) / TICKS_PER_100ms)
@@ -50,10 +50,12 @@ static void report_debug_register() {
 static void periodic_timer_cb(void * p_context)
 {
   m_current_time += 1;
+  DBG_TICK_PIN(6);
+
 
   if (m_current_time % 10 == 0) {
     //report_debug_register();
-    led_config(LED_GREEN, 1);
+    //led_config(LED_GREEN, 1);
     app_timer_cnt_get(&m_clock_second_start_counter_value);
     m_scheduler_state = SCHEDULER_STATE_BEFORE_HB;
     rbc_mesh_start();
@@ -110,7 +112,7 @@ static void delay_to_sleep() {
 
 static void do_sleep() {
   rbc_mesh_stop();
-  led_config(LED_GREEN, 0);
+  //led_config(LED_GREEN, 0);
 }
 
 static void offset_timer_cb(void * p_context) {
@@ -128,7 +130,7 @@ static void offset_timer_cb(void * p_context) {
       delay_to_sleep();
       break;
     case SCHEDULER_STATE_REPORTING:
-      if (clock_is_synchronized()) {
+      if (m_sleep_enabled && clock_is_synchronized()) {
         do_sleep();
       }
       m_scheduler_state = SCHEDULER_STATE_SLEEP;
@@ -158,7 +160,8 @@ void start_clock(uint16_t start_delay) {
   }
 }
 
-void scheduler_init() {
+void scheduler_init(bool sleep_enabled) {
+  m_sleep_enabled = sleep_enabled;
   rand_prng_seed(&m_rand);
   m_scheduler_state = SCHEDULER_STATE_STOPPED;
   APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, false);
