@@ -12,10 +12,16 @@ typedef enum
 
 typedef __packed_armcc struct
 {
+  uint8_t rssi;
+  heartbeat_ad_t packet;
+} __packed_gcc app_evt_params_heartbeat_t;
+
+typedef __packed_armcc struct
+{
     app_evt_opcode_t opcode;
     __packed_armcc union
     {
-        heartbeat_ad_t heartbeat;
+      app_evt_params_heartbeat_t heartbeat;
     } __packed_gcc params;
 } __packed_gcc  app_evt_t;
 

@@ -72,7 +72,7 @@ static void delay_to_heartbeat() {
   sensor_warmup_event();
 
   if (app_timer_start(m_offset_timer_ID, delay_ticks, NULL) != NRF_SUCCESS) {
-    toggle_led(LED_RED);
+    TOGGLE_LED(LED_RED);
   }
 }
 
@@ -137,7 +137,7 @@ static void offset_timer_cb(void * p_context) {
       // periodic timer will wake us next time
       break;
   default:
-    toggle_led(LED_RED);
+    TOGGLE_LED(LED_RED);
     break;
   }
 }

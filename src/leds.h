@@ -21,16 +21,8 @@
                               NRF_GPIO->OUTSET = ((1<<(x)) & ~gpio_state); \
                               NRF_GPIO->OUTCLR = ((1<<(x)) & gpio_state); } while (0)
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void toggle_led(unsigned char led);
-void led_config(uint8_t led, uint8_t conf);
-
-#ifdef __cplusplus
-}
-#endif
+#define SET_LED(x) SET_PIN(LED_START + x)
+#define CLEAR_LED(x) CLEAR_PIN(LED_START + x)
+#define TOGGLE_LED(x) TOGGLE_PIN(LED_START + x)
 
 #endif // LEDS_H

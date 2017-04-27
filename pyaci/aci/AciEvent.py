@@ -144,11 +144,12 @@ class AciEventTX(AciEventNew):
 
 class HeartbeatMsg(object):
     def __init__(self, data):
-        (self.sensor_id, self.epoch_seconds, self.epoch_ms, self.clock_version) = unpack('<BiHH', bytearray(data))
+        if len(data) != 10:
+            print(str.format("Error: expected 10 bytes, got %s" %(data)))
+        (self.rssi, self.sensor_id, self.epoch_seconds, self.epoch_ms, self.clock_version) = unpack('<BBiHH', bytearray(data))
 
     def __repr__(self):
-        return "Heartbeat: sensor_id:{sensor_id} epoch:{epoch_seconds} ms:{epoch_ms} clock_version:{clock_version}".format(**vars(self))
-
+        return "Heartbeat: rssi:{rssi} sensor_id:{sensor_id} epoch:{epoch_seconds} ms:{epoch_ms} clock_version:{clock_version}".format(**vars(self))
 
 class AciEventAppEvt(AciEventPkt):
     APP_EVENT_OPCODE_HEARTBEAT = 0x01

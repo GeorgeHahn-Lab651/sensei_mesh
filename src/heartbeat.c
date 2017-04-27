@@ -43,7 +43,7 @@ void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t e
     p_heartbeat_ad->clock_version = clock_version;
 
     if (tc_tx(p_packet, &m_tx_config) != NRF_SUCCESS) {
-      toggle_led(LED_RED);
+      TOGGLE_LED(LED_RED);
     }
 
     mesh_packet_ref_count_dec(p_packet);
@@ -56,6 +56,7 @@ void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad, uint8_t rssi) {
   proximity_add_entry(p_heartbeat_ad->sensor_id, rssi);
 
   event.opcode = APP_EVT_OPCODE_HEARTBEAT;
-  event.params.heartbeat = *p_heartbeat_ad;
+  event.params.heartbeat.rssi = rssi;
+  event.params.heartbeat.packet = *p_heartbeat_ad;
   app_event_send(&event);
 }

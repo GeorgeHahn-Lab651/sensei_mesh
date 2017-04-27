@@ -30,7 +30,7 @@
 /** @brief General error handler. */
 static inline void error_loop(void)
 {
-  toggle_led(LED_RED);
+  TOGGLE_LED(LED_RED);
   __disable_irq();
   while (true)
   {
@@ -135,7 +135,7 @@ int main(void)
 
 
   // if (NRF_CLOCK->LFCLKSRC == (CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos)) {
-  //   toggle_led(LED_GREEN);
+  //   TOGGLE_LED(LED_GREEN);
   // }
 
   /* Initialize mesh. */
@@ -151,14 +151,14 @@ int main(void)
   APP_ERROR_CHECK(error_code);
   //led_config(LED_GREEN, 1);
 
-  // Setup handler for watching for heartbeat messages
-  rbc_mesh_packet_peek_cb_set(packet_peek_cb);
-
   // This has to come after rbc_mesh_init for some reason.  Otherwise we
   // get a HardFault when rbc_mesh_init is called
   app_config_t app_config;
   config_init();
   get_config(&app_config);
+
+  // Setup handler for watching for heartbeat messages
+  rbc_mesh_packet_peek_cb_set(packet_peek_cb);
 
   // Change channel if needed
   if (app_config.mesh_channel != DEFAULT_MESH_CHANNEL) {

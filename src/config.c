@@ -20,7 +20,7 @@ static void m_storage_callback(pstorage_handle_t *p_handle, uint8_t op_code, uin
   switch (op_code) {
     case PSTORAGE_STORE_OP_CODE:
       if (result == NRF_SUCCESS) {
-        toggle_led(LED_BLUE);
+        TOGGLE_LED(LED_BLUE);
       }
       break;
     case PSTORAGE_CLEAR_OP_CODE:
