@@ -72,6 +72,7 @@ class AciUart(threading.Thread, AciDevice):
     def __init__(self, port, baudrate=115200, device_name=None, rtscts=False):
         self.events_queue = Queue(maxsize = EVT_Q_BUF)
         threading.Thread.__init__(self)
+        self.daemon = True
         if not device_name:
             device_name = port
         AciDevice.__init__(self, device_name)

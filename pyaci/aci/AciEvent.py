@@ -121,9 +121,15 @@ class AciEventNew(AciEventPkt):
             self.ValueHandle = (pkt[3] << 8) + pkt[2]
             self.Data = pkt[4:]
 
+    def is_sensor_update(self):
+        return self.ValueHandle >> 8 == 0x01
+
+    def sensor_values(self):
+        return SensorValues(self.ValueHandle & 0xff, self.Data)
+
     def __repr__(self):
-        if self.ValueHandle >> 8 == 0x01:
-            return str.format("%s %s" %(self.__class__.__name__, SensorValues(self.ValueHandle & 0xff, self.Data)))
+        if self.is_sensor_update():
+            return str.format("%s %s" %(self.__class__.__name__, self.sensor_values()))
         else:
             return str.format("%s length:%d opcode:0x%02x value_handle:0x%04x data:%s" %(self.__class__.__name__, self.Len, self.OpCode, self.ValueHandle, self.Data))
 
@@ -157,9 +163,9 @@ class AciEventAppEvt(AciEventPkt):
     #OpCode = 0x60
     def __init__(self,pkt):
         super(AciEventAppEvt, self).__init__(pkt)
-        self.app_opcode = self.Data[0]
+        self.app_evt_opcode = self.Data[0]
 
     def __repr__(self):
-        if self.app_opcode == AciEventAppEvt.APP_EVENT_OPCODE_HEARTBEAT:
+        if self.app_evt_opcode == AciEventAppEvt.APP_EVENT_OPCODE_HEARTBEAT:
             return repr(HeartbeatMsg(self.Data[1:]))
         #if self.app_opcode == APP_EVENT_OPCODE_HEARTBEAT:
