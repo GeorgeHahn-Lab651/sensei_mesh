@@ -132,6 +132,9 @@ int main(void)
   nrf_gpio_cfg_output(5);
   nrf_gpio_cfg_output(6);
 
+  // Disable simblee's proximityMode
+  nrf_gpio_cfg_output(31);
+  CLEAR_PIN(31);
 
   // if (NRF_CLOCK->LFCLKSRC == (CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos)) {
   //   TOGGLE_LED(LED_GREEN);

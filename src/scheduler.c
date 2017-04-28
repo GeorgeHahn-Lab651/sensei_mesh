@@ -55,7 +55,7 @@ static void periodic_timer_cb(void * p_context)
 
   if (1 /*m_current_time % 10 == 0*/) {
     //report_debug_register();
-    //led_config(LED_GREEN, 1);
+    SET_LED(LED_GREEN);
     app_timer_cnt_get(&m_clock_second_start_counter_value);
     m_scheduler_state = SCHEDULER_STATE_BEFORE_HB;
     rbc_mesh_start();
@@ -78,11 +78,7 @@ static void delay_to_heartbeat() {
 
 static void do_heartbeat() {
   //led_config(LED_GREEN, 0);
-  uint32_t current_counter;
-  app_timer_cnt_get(&current_counter);
-  // Modulo wraparound makes this ok
-  uint32_t elapsed_ticks_since_second_start = current_counter - m_clock_second_start_counter_value;
-  send_heartbeat_packet(get_sensor_id(), m_current_time, TICKS_TO_MS(elapsed_ticks_since_second_start), m_clock_version);
+  send_heartbeat_packet(get_sensor_id(), m_current_time, get_clock_ms(), m_clock_version);
 }
 
 static void delay_to_reporting() {
@@ -112,7 +108,6 @@ static void delay_to_sleep() {
 
 static void do_sleep() {
   rbc_mesh_stop();
-  //led_config(LED_GREEN, 0);
 }
 
 static void offset_timer_cb(void * p_context) {
@@ -130,6 +125,7 @@ static void offset_timer_cb(void * p_context) {
       delay_to_sleep();
       break;
     case SCHEDULER_STATE_REPORTING:
+      CLEAR_LED(LED_GREEN);
       if (m_sleep_enabled && clock_is_synchronized()) {
         do_sleep();
       }
@@ -193,6 +189,12 @@ void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int
   start_clock(start_delay);
 }
 
+int32_t get_clock_ms() {
+  uint32_t current_counter;
+  app_timer_cnt_get(&current_counter);
+  return TICKS_TO_MS(current_counter - m_clock_second_start_counter_value);
+}
+
 int32_t get_clock_time() {
   return m_current_time;
 }
@@ -200,6 +202,11 @@ int32_t get_clock_time() {
 int32_t get_uptime() {
   return m_current_time - m_boot_time;
 }
+
+uint16_t get_clock_version() {
+  return m_clock_version;
+}
+
 
 bool clock_is_synchronized() {
   return m_last_sync > 0 && (m_current_time - m_last_sync) < (60 * 60);

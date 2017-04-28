@@ -13,6 +13,9 @@ typedef enum
 typedef __packed_armcc struct
 {
   uint8_t rssi;
+  int32_t received_at;
+  uint16_t received_at_ms;
+  uint16_t local_clock_version;
   heartbeat_ad_t packet;
 } __packed_gcc app_evt_params_heartbeat_t;
 

@@ -100,16 +100,24 @@ class AciCmdRsp(AciEventPkt):
 class SensorValues(object):
     def __init__(self, sensor_id, data):
         self.sensor_id = sensor_id
-        self.proximity_ids = data[0:5]
-        self.proximity_rssi = data[5:10]
-        self.battery = data[10]
-        self.accel_x = data[11]
-        self.accel_y = data[12]
-        self.accel_z = data[13]
-        self.status = data[14]
-        self.uptime = unpack('<i',bytearray(data[15:19]))[0]
+        if len(data) == 19:
+            self.proximity_ids = data[0:5]
+            self.proximity_rssi = data[5:10]
+            self.battery = data[10]
+            self.accel_x = data[11]
+            self.accel_y = data[12]
+            self.accel_z = data[13]
+            self.status = data[14]
+            self.valid_time = unpack('<i',bytearray(data[15:19]))[0]
+            self.is_valid = True
+        else:
+            self.is_valid = False
+            self.data = data
     def __repr__(self):
-        return "SensorValues: sensor_id:{sensor_id} proximity_ids:{proximity_ids} proximity_rssi:{proximity_rssi} battery:{battery}, accel:({accel_x}, {accel_y}, {accel_z}), status:{status}, uptime:{uptime}".format(**vars(self))
+        if self.is_valid:
+            return "SensorValues: sensor_id:{sensor_id} proximity_ids:{proximity_ids} proximity_rssi:{proximity_rssi} battery:{battery}, accel:({accel_x}, {accel_y}, {accel_z}), status:{status}, valid_time:{valid_time}".format(**vars(self))
+        else:
+            return "SensorValues: invalid data from sensor {sensor_id}: ({data})".format(sensor_id=self.sensor_id, data=self.data)
 
 class AciEventNew(AciEventPkt):
     #OpCode = 0xB3
@@ -150,12 +158,12 @@ class AciEventTX(AciEventNew):
 
 class HeartbeatMsg(object):
     def __init__(self, data):
-        if len(data) != 10:
-            print(str.format("Error: expected 10 bytes, got %s" %(data)))
-        (self.rssi, self.sensor_id, self.epoch_seconds, self.epoch_ms, self.clock_version) = unpack('<BBiHH', bytearray(data))
+        if len(data) != 18:
+            print(str.format("Error: expected 16 bytes, got %s" %(data)))
+        (self.rssi, self.received_at, self.received_at_ms, self.local_clock_version, self.sensor_id, self.epoch_seconds, self.epoch_ms, self.clock_version) = unpack('<BiHHBiHH', bytearray(data))
 
     def __repr__(self):
-        return "Heartbeat: rssi:{rssi} sensor_id:{sensor_id} epoch:{epoch_seconds} ms:{epoch_ms} clock_version:{clock_version}".format(**vars(self))
+        return "Heartbeat: rssi:{rssi} sensor_id:{sensor_id} epoch:{epoch_seconds} ms:{epoch_ms} clock_version:{clock_version} received_at:{received_at} received_at_ms:{received_at_ms} local_clock_version:{local_clock_version}".format(**vars(self))
 
 class AciEventAppEvt(AciEventPkt):
     APP_EVENT_OPCODE_HEARTBEAT = 0x01

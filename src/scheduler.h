@@ -35,8 +35,15 @@ void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int
 // Returns unix epoch
 int32_t get_clock_time();
 
+// Returns ms portion of unix epoch
+int32_t get_clock_ms();
+
 // Seconds since the sensor started
 int32_t get_uptime();
+
+// Local clock version
+uint16_t get_clock_version();
+
 
 // Returns true if the clock has been synchronized within the last hour
 bool clock_is_synchronized();

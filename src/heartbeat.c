@@ -13,7 +13,7 @@ void heartbeat_init(uint8_t channel) {
   m_tx_config.alt_access_address = false;
   m_tx_config.first_channel = channel;
   m_tx_config.channel_map = 1;
-  m_tx_config.tx_power = RBC_MESH_TXPOWER_0dBm;
+  m_tx_config.tx_power = RBC_MESH_TXPOWER_Pos4dBm;
 }
 
 void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t epoch_ms, uint16_t clock_version) {
@@ -57,6 +57,9 @@ void received_heartbeat(heartbeat_ad_t *p_heartbeat_ad, uint8_t rssi) {
 
   event.opcode = APP_EVT_OPCODE_HEARTBEAT;
   event.params.heartbeat.rssi = rssi;
+  event.params.heartbeat.received_at = get_clock_time();
+  event.params.heartbeat.received_at_ms = get_clock_ms();
+  event.params.heartbeat.local_clock_version = get_clock_version();
   event.params.heartbeat.packet = *p_heartbeat_ad;
   app_event_send(&event);
 }

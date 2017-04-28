@@ -17,7 +17,7 @@ typedef __packed_armcc struct
     int8_t accel_y;
     int8_t accel_z;
     uint8_t status;
-    uint32_t uptime;
+    int32_t valid_time;
 } __packed_gcc sensor_value_t;
 
 void sensor_init();

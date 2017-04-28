@@ -23,7 +23,7 @@ void sensor_warmup_event() {
 }
 
 void gather_sensor_data() {
-  m_value.uptime = get_uptime();
+  m_value.valid_time = get_clock_time();
   m_value.battery = get_battery_adc();
   //m_value.status = ??
 
