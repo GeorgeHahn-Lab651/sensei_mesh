@@ -127,7 +127,8 @@ class AciEventNew(AciEventPkt):
             logging.error("Invalid length for %s event: %s", self.__class__.__name__, str(pkt))
         else:
             self.ValueHandle = (pkt[3] << 8) + pkt[2]
-            self.Data = pkt[4:]
+            self.VersionDelta = (pkt[5] << 8) + pkt[4]
+            self.Data = pkt[6:]
 
     def is_sensor_update(self):
         return self.ValueHandle >> 8 == 0x01
@@ -137,7 +138,7 @@ class AciEventNew(AciEventPkt):
 
     def __repr__(self):
         if self.is_sensor_update():
-            return str.format("%s %s" %(self.__class__.__name__, self.sensor_values()))
+            return str.format("%s(%d) %s" %(self.__class__.__name__, self.VersionDelta, self.sensor_values()))
         else:
             return str.format("%s length:%d opcode:0x%02x value_handle:0x%04x data:%s" %(self.__class__.__name__, self.Len, self.OpCode, self.ValueHandle, self.Data))
 

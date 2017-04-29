@@ -9,7 +9,6 @@
 #define Z_PIN 6
 
 void shoe_accel_init() {
-  return;
   nrf_gpio_cfg_output(ACCEL_POWER_PIN);
   nrf_gpio_cfg_input(X_PIN, NRF_GPIO_PIN_NOPULL);
   nrf_gpio_cfg_input(Z_PIN, NRF_GPIO_PIN_NOPULL);

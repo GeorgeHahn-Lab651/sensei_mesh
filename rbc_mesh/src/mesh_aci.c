@@ -645,11 +645,12 @@ void mesh_aci_rbc_event_handler(rbc_mesh_event_t* evt)
             break;
     }
 
-    /* serial overhead: opcode + handle = 3 */
-    serial_evt.length = 3 + evt->params.rx.data_len;
+    /* serial overhead: opcode + handle + version = 5 */
+    serial_evt.length = 5 + evt->params.rx.data_len;
 
     /* all event parameter types are the same, just use event_update for all */
     serial_evt.params.event_update.handle = evt->params.rx.value_handle;
+    serial_evt.params.event_update.version_delta = evt->params.rx.version_delta;
     memcpy(serial_evt.params.event_update.data, evt->params.rx.p_data, evt->params.rx.data_len);
 
     serial_handler_event_send(&serial_evt);

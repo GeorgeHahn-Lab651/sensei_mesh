@@ -188,16 +188,27 @@ int main(void)
     sensor_init();
   }
 
+  error_code = rbc_mesh_value_enable(TEST_LED_HANDLE);
+  APP_ERROR_CHECK(error_code);
+
   // Start clock
   start_clock(0);
 
    //rbc_mesh_stop();
   //rbc_mesh_start();
   //sd_app_evt_wait();
-  while(1) {
-    __WFE();
-    __SEV();
-    __WFE();
-  }
+  // while(1) {
+  //   __WFE();
+  //   __SEV();
+  //   __WFE();
+  // }
 
+  rbc_mesh_event_t evt;
+  while (true) {
+    if (rbc_mesh_event_get(&evt) == NRF_SUCCESS) {
+      rbc_mesh_event_handler(&evt);
+      rbc_mesh_event_release(&evt);
+    }
+    sd_app_evt_wait();
+  }
 }

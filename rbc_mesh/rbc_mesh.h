@@ -65,8 +65,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #if defined(WITH_ACK_MASTER) || defined (WITHOUT_ACK_MASTER)
           #define RBC_MESH_HANDLE_CACHE_ENTRIES           (105)
     #else
-          #define RBC_MESH_HANDLE_CACHE_ENTRIES           (10)
-    #endif      
+          #define RBC_MESH_HANDLE_CACHE_ENTRIES           (20)
+    #endif
 #endif
 
 /** @brief Default value for the number of data cache entries */
@@ -74,7 +74,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #if defined(WITH_ACK_MASTER) || defined (WITHOUT_ACK_MASTER)
          #define RBC_MESH_DATA_CACHE_ENTRIES             (105)
     #else
-         #define RBC_MESH_DATA_CACHE_ENTRIES             (10)
+         #define RBC_MESH_DATA_CACHE_ENTRIES             (20)
     #endif
 #endif
 
@@ -612,4 +612,3 @@ void rbc_mesh_event_release(rbc_mesh_event_t* p_evt);
 void rbc_mesh_packet_peek_cb_set(rbc_mesh_packet_peek_cb_t packet_peek_cb);
 
 #endif /* _RBC_MESH_H__ */
-

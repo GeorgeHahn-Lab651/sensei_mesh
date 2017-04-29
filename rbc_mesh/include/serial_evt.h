@@ -134,24 +134,28 @@ typedef __packed_armcc struct
 typedef __packed_armcc struct
 {
     rbc_mesh_value_handle_t handle;
+    uint16_t version_delta;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_new_t;
 
 typedef __packed_armcc struct
 {
     rbc_mesh_value_handle_t handle;
+    uint16_t version_delta;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_update_t;
 
 typedef __packed_armcc struct
 {
     rbc_mesh_value_handle_t handle;
+    uint16_t version_delta;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_conflicting_t;
 
 typedef __packed_armcc struct
 {
     rbc_mesh_value_handle_t handle;
+    uint16_t version_delta;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_tx_t;
 
