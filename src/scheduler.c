@@ -53,7 +53,7 @@ static void periodic_timer_cb(void * p_context)
   DBG_TICK_PIN(6);
 
 
-  if (1 /*m_current_time % 10 == 0*/) {
+  if (m_current_time % 3 == 0) {
     //report_debug_register();
     SET_LED(LED_GREEN);
     app_timer_cnt_get(&m_clock_second_start_counter_value);
@@ -108,6 +108,9 @@ static void delay_to_sleep() {
 
 static void do_sleep() {
   rbc_mesh_stop();
+  __WFE();
+  __SEV();
+  __WFE();
 }
 
 static void offset_timer_cb(void * p_context) {
@@ -183,9 +186,9 @@ void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int
   TOGGLE_PIN(LED_BLUE + LED_START);
   m_boot_time += epoch - m_current_time;
   m_last_sync = m_current_time = epoch;
-  uint16_t start_delay = (1000 - ms) % 1000;
   app_timer_stop(m_periodic_timer_ID);
   app_timer_stop(m_clock_sync_timer_ID);
+  uint16_t start_delay = (1000 - ms) % 1000;
   start_clock(start_delay);
 }
 

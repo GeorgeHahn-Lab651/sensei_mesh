@@ -185,7 +185,7 @@ void radio_init(radio_idle_cb_t idle_cb,
 
     /* Set radio configuration parameters */
     NRF_RADIO->TXPOWER      = ((RADIO_TXPOWER_TXPOWER_0dBm << RADIO_TXPOWER_TXPOWER_Pos) & RADIO_TXPOWER_TXPOWER_Msk);
-    NRF_RADIO->MODE 	    = ((RADIO_MODE_MODE_Nrf_250Kbit << RADIO_MODE_MODE_Pos) & RADIO_MODE_MODE_Msk);
+    NRF_RADIO->MODE 	    = ((RADIO_MODE_MODE_Ble_1Mbit << RADIO_MODE_MODE_Pos) & RADIO_MODE_MODE_Msk);
 
     NRF_RADIO->FREQUENCY 	    = 2;					// Frequency bin 2, 2402MHz, channel 37.
     NRF_RADIO->DATAWHITEIV      = 37;					// NOTE: This value needs to correspond to the frequency being used

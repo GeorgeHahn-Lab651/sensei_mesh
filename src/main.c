@@ -13,6 +13,7 @@
 #include "config.h"
 #include "sensor.h"
 #include "transport_control.h"
+#include "serial_handler.h"
 #include "scheduler.h"
 #include "heartbeat.h"
 #include "handles.h"
@@ -115,7 +116,6 @@ static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
 
 int main(void)
 {
-  //clock_initialization();
 
   nrf_gpio_cfg_input(BUTTON_1, NRF_GPIO_PIN_PULLDOWN);
   nrf_gpio_cfg_input(BUTTON_2, NRF_GPIO_PIN_PULLDOWN);
@@ -123,6 +123,9 @@ int main(void)
   /* Enable Softdevice (including sd_ble before framework */
   SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
   softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
+
+  //clock_initialization();
+  //sd_softdevice_disable();
 
   // Register with the SoftDevice handler module for system events.
   softdevice_sys_evt_handler_set(sys_evt_dispatch);
@@ -153,6 +156,7 @@ int main(void)
   APP_ERROR_CHECK(error_code);
   //led_config(LED_GREEN, 1);
 
+
   // This has to come after rbc_mesh_init for some reason.  Otherwise we
   // get a HardFault when rbc_mesh_init is called
   app_config_t app_config;
@@ -168,18 +172,16 @@ int main(void)
   // }
 
   scheduler_init(app_config.sleep_enabled); // Initializes, but does not start, clock
-
   heartbeat_init(DEFAULT_MESH_CHANNEL); // Inits structures for sending heartbeat
 
-  /* Initialize serial ACI */
-  if (app_config.serial_enabled) {
-    mesh_aci_init();
-    mesh_aci_app_cmd_handler_set(app_cmd_handler);
-  }
+  /* Initialize mesh ACI */
+  mesh_aci_init();
+  mesh_aci_app_cmd_handler_set(app_cmd_handler);
 
-  /* Enable test led handle */
-  error_code = rbc_mesh_value_enable(TEST_LED_HANDLE);
-  APP_ERROR_CHECK(error_code);
+  // Stop serial if serial is disabled
+  if (!app_config.serial_enabled) {
+    serial_handler_stop();
+  }
 
   /* Enable our handle */
   if (app_config.sensor_id > 0) {
@@ -189,31 +191,13 @@ int main(void)
   // Start clock
   start_clock(0);
 
-  /* Main event loop */
-  rbc_mesh_event_t evt;
-  while (true)
-  {
-    for (uint32_t pin = BUTTON_START; pin <= BUTTON_STOP; ++pin)
-    {
-      if(nrf_gpio_pin_read(pin) == 1)
-      {
-        while(nrf_gpio_pin_read(pin) == 1);
-        uint8_t mesh_data[1];
-        uint32_t led_status = !!((pin - BUTTON_START) & 0x01); /* even buttons are OFF, odd buttons are ON */
-
-        mesh_data[0] = led_status;
-        //led_config(LED_BLUE, led_status);
-        error_code = rbc_mesh_value_set(TEST_LED_HANDLE, mesh_data, 1);
-        APP_ERROR_CHECK(error_code);
-      }
-    }
-
-    if (rbc_mesh_event_get(&evt) == NRF_SUCCESS)
-    {
-      rbc_mesh_event_handler(&evt);
-      rbc_mesh_event_release(&evt);
-    }
-
-    sd_app_evt_wait();
+   //rbc_mesh_stop();
+  //rbc_mesh_start();
+  //sd_app_evt_wait();
+  while(1) {
+    __WFE();
+    __SEV();
+    __WFE();
   }
+
 }

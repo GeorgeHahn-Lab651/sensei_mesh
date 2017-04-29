@@ -1,22 +1,26 @@
 #include "shoe_accel.h"
-#include "wiring_digital.h"
+#include "gpio_pins.h"
+#include "nrf_gpio.h"
 #include "wiring_analog.h"
-#include "wiring_constants.h"
+
 
 #define ACCEL_POWER_PIN 23
 #define X_PIN 4
 #define Z_PIN 6
 
 void shoe_accel_init() {
-  pinMode(ACCEL_POWER_PIN, OUTPUT);
+  return;
+  nrf_gpio_cfg_output(ACCEL_POWER_PIN);
+  nrf_gpio_cfg_input(X_PIN, NRF_GPIO_PIN_NOPULL);
+  nrf_gpio_cfg_input(Z_PIN, NRF_GPIO_PIN_NOPULL);
 }
 
 void enable_shoe_accel() {
-  digitalWrite(ACCEL_POWER_PIN, HIGH);
+  SET_PIN(ACCEL_POWER_PIN);
 }
 
 void disable_shoe_accel() {
-  digitalWrite(ACCEL_POWER_PIN, LOW);
+  CLEAR_PIN(ACCEL_POWER_PIN);
 }
 
 void read_shoe_accel(int8_t *x, int8_t *y, int8_t *z) {

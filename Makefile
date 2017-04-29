@@ -328,13 +328,17 @@ echosize:
 	$(NO_ECHO)$(SIZE) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf
 	-@echo ""
 
-install:
+.PHONY: install
+install: all
 	@echo Installing: $(OUTPUT_NAME).hex
 	$(NO_ECHO)$(RFD_LOADER) $(SERIAL_PORT) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
-
 
 clean:
 	$(RM) $(BUILD_DIRECTORIES)
 
 cleanobj:
 	$(RM) $(BUILD_DIRECTORIES)/*.o
+
+.PHONY: program
+program: all install
+	./pyaci/configure_sensor.py $(SENSOR_CONFIGURATION_OPTIONS) -d $(SERIAL_PORT) $(SENSOR_ID)

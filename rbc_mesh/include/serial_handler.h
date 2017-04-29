@@ -47,6 +47,8 @@ typedef __packed_armcc struct
 
 void serial_handler_init(void);
 
+void serial_handler_stop(void);
+
 uint32_t serial_handler_credit_available(void);
 
 void serial_wait_for_completion(void);
