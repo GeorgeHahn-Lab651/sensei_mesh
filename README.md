@@ -4,7 +4,16 @@
  - Arduino IDE
  - Simblee platform for arduino
 
-# Instructions
+# Setup
 
  - Update Makefile with paths to the NRF SDK, and your serial board, and where arduino is installed.
- - `make && make install`
+
+# Compile and flash devices
+
+Program a sensor with id 1, turning off serial for power savings
+
+`make program SERIAL_PORT=/dev/cu.usbserial-FTZ86FTC SENSOR_ID=1 SENSOR_CONFIGURATION_OPTIONS="--no-serial"`
+
+Program a master listening device that doesn't sleep, and listens all the time.
+
+`make program SERIAL_PORT=/dev/cu.usbserial-DN00D34P SENSOR_ID=3 SENSOR_CONFIGURATION_OPTIONS="--no-sleep"`

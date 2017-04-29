@@ -53,7 +53,7 @@ static void periodic_timer_cb(void * p_context)
   DBG_TICK_PIN(6);
 
 
-  if (m_current_time % 3 == 0) {
+  if (m_current_time % 10 == 0) {
     //report_debug_register();
     SET_LED(LED_GREEN);
     app_timer_cnt_get(&m_clock_second_start_counter_value);
