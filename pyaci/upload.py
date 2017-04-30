@@ -44,6 +44,8 @@ class Uploader(object):
         print(str.format("Synced time: %s" %(result)))
 
     def radio_obs_from_update(self, update):
+        if not update.is_valid:
+            return []
         obs = []
         for remote_id, rssi in zip(update.proximity_ids, update.proximity_rssi):
             ob_time = datetime.datetime.utcfromtimestamp(update.valid_time)
@@ -61,7 +63,8 @@ class Uploader(object):
             if len(updates) > 0:
                 obs = [self.radio_obs_from_update(update) for update in updates]
                 flattened_obs = [ob for sublist in obs for ob in sublist]
-                self.api.upload_obs(flattened_obs)
+                if len(flattened_obs) > 0:
+                    self.api.upload_obs(flattened_obs)
             else:
                 time.sleep(0.5)
                 if time.time() - self.last_time_sync > Uploader.TIME_SYNC_INTERVAL:
