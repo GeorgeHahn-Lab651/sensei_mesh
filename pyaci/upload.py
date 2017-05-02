@@ -55,6 +55,12 @@ class Uploader(object):
                 obs.append(RadioObservation(self.classroom_id, update.sensor_id, remote_id, ob_time, -rssi))
         return obs
 
+    def accelerometer_measurement_from_update(self, update):
+        if update.is_valid and (update.accel_x or update.accel_y or update.accel_z):
+            ob_time = datetime.datetime.utcfromtimestamp(update.valid_time)
+            return AccelerometerObservation(self.classroom_id, update.sensor_id,
+                ob_time, update.accel_x, update.accel_y, update.accel_z)
+
     def run(self):
         # Wait for serial connection to be ready
         time.sleep(3)
@@ -71,7 +77,14 @@ class Uploader(object):
                 obs = [self.radio_obs_from_update(update) for update in updates]
                 flattened_obs = [ob for sublist in obs for ob in sublist]
                 if len(flattened_obs) > 0:
-                    self.api.upload_obs(flattened_obs)
+                    self.api.upload_radio_observations(flattened_obs)
+                accelerometer_obs = []
+                for update in updates:
+                    ob = self.accelerometer_measurement_from_update(update)
+                    if ob:
+                        accelerometer_obs.append(ob)
+                if len(accelerometer_obs) > 0:
+                    self.api.upload_accelerometer_observations(accelerometer_obs)
             elif time.time() - self.last_time_sync > Uploader.TIME_SYNC_INTERVAL:
                 self.sync_time()
             else:
