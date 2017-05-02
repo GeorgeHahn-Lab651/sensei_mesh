@@ -120,7 +120,7 @@ class AciUart(threading.Thread, AciDevice):
                 try:
                     self.events_queue.put_nowait(parsedPacket)
                 except Full:
-                    logging.error('Packet queue full... dropping packet')
+                    pass
                 logging.debug('parsedPacket %r %s', parsedPacket, parsedPacket)
                 self.ProcessPacket(parsedPacket)
 

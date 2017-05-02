@@ -11,7 +11,8 @@ def listen(serial_device):
     # Wait for serial connection to be ready
     time.sleep(2)
     while True:
-        print(str.format("%.3f %s" %(time.time(), aci.events_queue.get())))
+        event = aci.events_queue.get()
+        print(str.format("%.3f %s" %(time.time(), event)))
 
 if __name__ == '__main__':
     parser = ArgumentParser()

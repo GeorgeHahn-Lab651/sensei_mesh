@@ -14,8 +14,8 @@ from os.path import expanduser
 import os.path
 
 class Uploader(object):
-    # Synchronize once every five minutes
-    TIME_SYNC_INTERVAL=5*60
+    # Synchronize once every minute
+    TIME_SYNC_INTERVAL=60
 
     def __init__(self, sensei_config):
         api_url = sensei_config["server"]["url"] + 'api/v1/'
