@@ -94,7 +94,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 C_SOURCE_FILES += src/main.c src/config.c src/sensor.c src/app_cmd.c \
  	src/scheduler.c src/proximity.c src/heartbeat.c src/battery.c src/shoe_accel.c \
-	src/app_evt.c bsp/bsp.c
+	src/app_evt.c src/mesh_control.c bsp/bsp.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp

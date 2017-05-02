@@ -2,6 +2,7 @@
 #define MESH_HANDLES_H
 
 #define SENSOR_HANDLE              (0x0100 + get_sensor_id())
+#define MESH_CONTROL_HANDLE        (0x0201)
 #define TEST_LED_HANDLE            (0xfe01)
 #define DEBUG_REGISTER_HANDLE      (0x1234)
 

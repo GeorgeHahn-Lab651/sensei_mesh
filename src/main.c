@@ -18,6 +18,7 @@
 #include "heartbeat.h"
 #include "handles.h"
 #include "bsp.h"
+#include "mesh_control.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -70,8 +71,8 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
     case RBC_MESH_EVENT_TYPE_CONFLICTING_VAL:
     case RBC_MESH_EVENT_TYPE_NEW_VAL:
     case RBC_MESH_EVENT_TYPE_UPDATE_VAL:
-      if (p_evt->params.rx.value_handle == TEST_LED_HANDLE) {
-        //led_config(LED_BLUE, p_evt->params.rx.p_data[0]);
+      if (p_evt->params.rx.value_handle == MESH_CONTROL_HANDLE) {
+        mesh_control_update_config((mesh_control_t*)p_evt->params.rx.p_data);
       }
       break;
     case RBC_MESH_EVENT_TYPE_TX:
@@ -119,6 +120,8 @@ int main(void)
 {
 
   bsp_init(BSP_INIT_BUTTONS & BSP_INIT_LED, 0, 0);
+
+  mesh_control_init();
 
   /* Enable Softdevice (including sd_ble before framework */
   SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
@@ -189,8 +192,11 @@ int main(void)
     sensor_init();
   }
 
-  error_code = rbc_mesh_value_enable(TEST_LED_HANDLE);
+  error_code = rbc_mesh_value_enable(MESH_CONTROL_HANDLE);
   APP_ERROR_CHECK(error_code);
+
+  // error_code = rbc_mesh_value_enable(TEST_LED_HANDLE);
+  // APP_ERROR_CHECK(error_code);
 
   // Start clock
   start_clock(0);

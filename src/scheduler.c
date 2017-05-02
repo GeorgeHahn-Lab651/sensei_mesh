@@ -9,6 +9,7 @@
 #include "sensor.h"
 #include "rbc_mesh.h"
 #include "handles.h"
+#include "mesh_control.h"
 
 //  Timer settings
 #define APP_TIMER_PRESCALER             15   // divisor value - 1
@@ -52,8 +53,7 @@ static void periodic_timer_cb(void * p_context)
   m_current_time += 1;
   DBG_TICK_PIN(6);
 
-
-  if (m_current_time % 10 == 0) {
+  if (m_current_time % mesh_control_get_wake_interval() == 0) {
     //report_debug_register();
     SET_LED(LED_GREEN);
     app_timer_cnt_get(&m_clock_second_start_counter_value);
@@ -210,7 +210,6 @@ uint16_t get_clock_version() {
   return m_clock_version;
 }
 
-
 bool clock_is_synchronized() {
-  return m_last_sync > 0 && (m_current_time - m_last_sync) < (60 * 60);
+  return m_last_sync > 0; // && (m_current_time - m_last_sync) < (60 * 60);
 }
