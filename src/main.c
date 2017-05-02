@@ -17,6 +17,7 @@
 #include "scheduler.h"
 #include "heartbeat.h"
 #include "handles.h"
+#include "bsp.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -117,8 +118,7 @@ static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
 int main(void)
 {
 
-  nrf_gpio_cfg_input(BUTTON_1, NRF_GPIO_PIN_PULLDOWN);
-  nrf_gpio_cfg_input(BUTTON_2, NRF_GPIO_PIN_PULLDOWN);
+  bsp_init(BSP_INIT_BUTTONS & BSP_INIT_LED, 0, 0);
 
   /* Enable Softdevice (including sd_ble before framework */
   SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
@@ -130,14 +130,15 @@ int main(void)
   // Register with the SoftDevice handler module for system events.
   softdevice_sys_evt_handler_set(sys_evt_dispatch);
 
-  LEDS_CONFIGURE(LEDS_MASK);
   // Debug pins
-  nrf_gpio_cfg_output(5);
-  nrf_gpio_cfg_output(6);
+  // nrf_gpio_cfg_output(5);
+  // nrf_gpio_cfg_output(6);
 
   // Disable simblee's proximityMode
+#ifdef SIMBLEE
   nrf_gpio_cfg_output(31);
   CLEAR_PIN(31);
+#endif
 
   // if (NRF_CLOCK->LFCLKSRC == (CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos)) {
   //   TOGGLE_LED(LED_GREEN);

@@ -183,7 +183,7 @@ void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int
   } else if (clock_source == CLOCK_SOURCE_SERIAL) {
     m_clock_version++;
   }
-  TOGGLE_PIN(LED_BLUE + LED_START);
+  TOGGLE_LED(LED_BLUE);
   m_boot_time += epoch - m_current_time;
   m_last_sync = m_current_time = epoch;
   app_timer_stop(m_periodic_timer_ID);

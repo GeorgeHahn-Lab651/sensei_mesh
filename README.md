@@ -10,10 +10,10 @@
 
 # Compile and flash devices
 
-Program a sensor with id 1, turning off serial for power savings
+Program a shoe sensor with id 1, turning off serial for power savings
 
-`make program SERIAL_PORT=/dev/cu.usbserial-FTZ86FTC SENSOR_ID=1 SENSOR_CONFIGURATION_OPTIONS="--no-serial"`
+`make program SERIAL_PORT=/dev/cu.usbserial-FTZ86FTC SENSOR_CONFIGURATION_OPTIONS="--no-serial" TARGET_BOARD=BOARD_SHOE_SENSOR SENSOR_ID=1`
 
 Program a master listening device that doesn't sleep, and listens all the time.
 
-`make program SERIAL_PORT=/dev/cu.usbserial-DN00D34P SENSOR_ID=3 SENSOR_CONFIGURATION_OPTIONS="--no-sleep"`
+`make program SERIAL_PORT=/dev/cu.usbserial-DN00CSZ7 SENSOR_CONFIGURATION_OPTIONS="--no-sleep” TARGET_BOARD=BOARD_RFD77201 SENSOR_ID=51`

@@ -44,8 +44,12 @@
   #include "arduino_primo.h"
 #elif defined (BOARD_SENSEI)
   #include "board_sensei.h"
-#elif defined(BOARD_CUSTOM)
-  #include "custom_board.h"
+#elif defined(BOARD_SHOE_SENSOR)
+  #include "shoe_sensor.h"
+#elif defined(BOARD_LESSON_TRACKER)
+  #include "lesson_tracker.h"
+#elif defined(BOARD_RFD77201)
+  #include "rfd77201.h"
 #else
 #error "Board is not defined"
 
@@ -66,11 +70,6 @@ extern "C" {
 #define LEDS_INVERT(leds_mask) do { uint32_t gpio_state = NRF_GPIO->OUT;      \
                               NRF_GPIO->OUTSET = ((leds_mask) & ~gpio_state); \
                               NRF_GPIO->OUTCLR = ((leds_mask) & gpio_state); } while (0)
-
-#define LEDS_CONFIGURE(leds_mask) do { uint32_t pin;                  \
-                                  for (pin = 0; pin < 32; pin++) \
-                                      if ( (leds_mask) & (1 << pin) )   \
-                                          nrf_gpio_cfg_output(pin); } while (0)
 
 
 #ifdef __cplusplus

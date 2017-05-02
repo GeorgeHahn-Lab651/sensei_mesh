@@ -9,14 +9,16 @@
  * the file.
  *
  */
-#ifndef BOARD_SENSEI_H
-#define BOARD_SENSEI_H
+#ifndef RFD77201_H
+#define RFD77201_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// LEDs definitions for PCA10028
+#define SIMBLEE
+
+// LEDs definitions for RFDuino board with RGB Shield
 #define LEDS_NUMBER    3
 
 #define LED_START      2
@@ -67,4 +69,4 @@ extern "C" {
 }
 #endif
 
-#endif // BOARD_SENSEI_H
+#endif // RFD77201_H

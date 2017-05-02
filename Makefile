@@ -4,10 +4,8 @@
 # Selectable build options
 #------------------------------------------------------------------------------
 
-#TARGET_BOARD         ?= BOARD_PCA10000
-#TARGET_BOARD         ?= BOARD_PCA10001
-#TARGET_BOARD         ?= BOARD_PCA10028
-TARGET_BOARD         ?= BOARD_SENSEI
+TARGET_BOARD         ?= BOARD_RFD77201
+#TARGET_BOARD         ?= BOARD_SHOE_SENSOR
 
 USE_DFU              ?= "no"
 
@@ -21,10 +19,11 @@ TEMPLATE_PATH := $(COMPONENTS)/toolchain/gcc
 SIMBLEE_BASE  := /Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2
 RBC_MESH  		:= rbc_mesh
 
+
 LINKER_SCRIPT := $(SIMBLEE_BASE)/variants/Simblee/linker_scripts/gcc/Simblee.ld
 RFD_LOADER 		:= $(SIMBLEE_BASE)/RFDLoader_osx
-SERIAL_PORT 	:= /dev/cu.usbserial-DN00CSZ7  # left
-#SERIAL_PORT 	:= /dev/cu.usbserial-DN00D34P  # right
+#SERIAL_PORT 	:= /dev/cu.usbserial-DN00CSZ7  # left
+SERIAL_PORT 	:= /dev/cu.usbserial-DN00D34P  # right
 #SERIAL_PORT 	:= /dev/cu.usbserial-A105RB12
 #SERIAL_PORT   := /dev/cu.usbserial-FTZ86FTC  # tag-connect
 #SERIAL_PORT   := /dev/cu.usbserial-DO00C2G2  # Breadboard setup
@@ -95,13 +94,13 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 C_SOURCE_FILES += src/main.c src/config.c src/sensor.c src/app_cmd.c \
  	src/scheduler.c src/proximity.c src/heartbeat.c src/battery.c src/shoe_accel.c \
-	src/app_evt.c
+	src/app_evt.c bsp/bsp.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/variants/Simblee/variant.cpp
 
-CFLAGS += -D RBC_MESH_SERIAL=1
+CFLAGS += -DRBC_MESH_SERIAL=1 -DBSP_SIMPLE
 C_SOURCE_FILES += $(RBC_MESH)/src/serial_handler_uart.c
 C_SOURCE_FILES += $(RBC_MESH)/src/mesh_aci.c
 

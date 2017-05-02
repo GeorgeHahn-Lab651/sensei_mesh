@@ -1,4 +1,5 @@
 
+#include "boards.h"
 #include "sensor.h"
 #include "config.h"
 #include "rbc_mesh.h"
@@ -7,11 +8,14 @@
 #include "handles.h"
 #include "shoe_accel.h"
 #include <app_error.h>
+#include <string.h>
 
 static sensor_value_t m_value;
 
 void sensor_init() {
+#ifdef ACCEL_ADXL337
   shoe_accel_init();
+#endif
 
   uint32_t error_code;
   error_code = rbc_mesh_value_enable(SENSOR_HANDLE);
@@ -19,20 +23,27 @@ void sensor_init() {
 }
 
 void sensor_warmup_event() {
+#ifdef ACCEL_ADXL337
   enable_shoe_accel();
+#endif
 }
 
 void gather_sensor_data() {
+  memset(&m_value, 0, sizeof(sensor_value_t));
   m_value.valid_time = get_clock_time();
   m_value.battery = get_battery_adc();
   //m_value.status = ??
 
+#ifdef ACCEL_ADXL337
   read_shoe_accel(&m_value.accel_x, &m_value.accel_y, &m_value.accel_z);
+#endif
 
   proximity_get_strongest_signals(m_value.proximity_ids, m_value.proximity_rssi, MAX_PROXIMITY_TRACKING_COUNT);
   proximity_values_reset();
 
+#ifdef ACCEL_ADXL337
   disable_shoe_accel();
+#endif
 }
 
 void report_sensor_data() {

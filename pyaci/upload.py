@@ -34,14 +34,16 @@ class Uploader(object):
                 break
         return updates
 
-    def runAppCommand(self, command):
+    def run_app_command(self, command):
         data = command.serialize()
         return self.aci.write_aci_cmd(AciCommand.AciAppCommand(data=data,length=len(data)+1))
 
     def sync_time(self):
         self.last_time_sync = time.time()
-        result = self.runAppCommand(sensei_cmd.SetTime())
-        print(str.format("Synced time: %s" %(result)))
+        result = self.run_app_command(sensei_cmd.SetTime())
+
+    def get_config(self):
+        return self.run_app_command(sensei_cmd.GetConfig())
 
     def radio_obs_from_update(self, update):
         if not update.is_valid:
@@ -55,7 +57,12 @@ class Uploader(object):
 
     def run(self):
         # Wait for serial connection to be ready
-        time.sleep(2)
+        time.sleep(3)
+        print("Getting config")
+        self.get_config()
+
+        # Sync time
+        print("Syncing time")
         self.sync_time()
 
         while True:
@@ -65,10 +72,10 @@ class Uploader(object):
                 flattened_obs = [ob for sublist in obs for ob in sublist]
                 if len(flattened_obs) > 0:
                     self.api.upload_obs(flattened_obs)
+            elif time.time() - self.last_time_sync > Uploader.TIME_SYNC_INTERVAL:
+                self.sync_time()
             else:
                 time.sleep(0.5)
-                if time.time() - self.last_time_sync > Uploader.TIME_SYNC_INTERVAL:
-                    self.sync_time()
 
 
 if __name__ == '__main__':

@@ -565,14 +565,16 @@ uint32_t bsp_init(uint32_t type, uint32_t ticks_per_100ms, bsp_event_callback_t 
     }
 #endif // (BUTTONS_NUMBER > 0) && !(defined BSP_SIMPLE)
 
-#if LEDS_NUMBER > 0 && !(defined BSP_SIMPLE)
 
+#if LEDS_NUMBER > 0
     if (type & BSP_INIT_LED)
     {
         LEDS_OFF(LEDS_MASK);
         NRF_GPIO->DIRSET = LEDS_MASK;
     }
+#endif
 
+#if LEDS_NUMBER > 0 && !(defined BSP_SIMPLE)
     // timers module must be already initialized!
     if (err_code == NRF_SUCCESS)
     {

@@ -60,7 +60,7 @@ class AciDevice(object):
         if isinstance(cmd,AciCommand.AciCommandPkt):
             self.WriteData(cmd.serialize())
             retval = self.Wait(self)
-            print("Event received: %s" %retval)
+            print("Events received: %s" %retval)
             if retval == None:
                 logging.info('cmd %s, timeout waiting for event' % (cmd.__class__.__name__))
         else:

@@ -18,7 +18,6 @@ void heartbeat_init(uint8_t channel) {
 
 void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t epoch_ms, uint16_t clock_version) {
   // Send out time sync packet
-  //TOGGLE_PIN(LED_RED + LED_START);
 
   mesh_packet_t *p_packet;
   if (mesh_packet_acquire(&p_packet)) {
