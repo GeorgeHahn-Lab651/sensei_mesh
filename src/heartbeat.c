@@ -6,6 +6,7 @@
 #include "scheduler.h"
 #include "proximity.h"
 #include "app_evt.h"
+#include "mesh_control.h"
 
 static tc_tx_config_t m_tx_config;
 
@@ -13,7 +14,7 @@ void heartbeat_init(uint8_t channel) {
   m_tx_config.alt_access_address = false;
   m_tx_config.first_channel = channel;
   m_tx_config.channel_map = 1;
-  m_tx_config.tx_power = RBC_MESH_TXPOWER_Pos4dBm;
+  m_tx_config.tx_power = mesh_control_get_hb_tx_power();
 }
 
 void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t epoch_ms, uint16_t clock_version) {
@@ -40,6 +41,12 @@ void send_heartbeat_packet(uint8_t sensor_id, uint32_t epoch_seconds, uint16_t e
     p_heartbeat_ad->epoch_seconds = epoch_seconds;
     p_heartbeat_ad->epoch_ms = epoch_ms;
     p_heartbeat_ad->clock_version = clock_version;
+
+#ifdef CLOCK_MASTER
+    m_tx_config.tx_power = RBC_MESH_TXPOWER_Pos4dBm;
+#else
+    m_tx_config.tx_power = mesh_control_get_hb_tx_power();
+#endif
 
     if (tc_tx(p_packet, &m_tx_config) != NRF_SUCCESS) {
       TOGGLE_LED(LED_RED);

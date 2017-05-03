@@ -104,6 +104,10 @@ CFLAGS += -DRBC_MESH_SERIAL=1 -DBSP_SIMPLE
 C_SOURCE_FILES += $(RBC_MESH)/src/serial_handler_uart.c
 C_SOURCE_FILES += $(RBC_MESH)/src/mesh_aci.c
 
+ifeq ($(CLOCK_MASTER), "yes")
+	CFLAGS += -D CLOCK_MASTER=1
+endif
+
 ifeq ($(USE_DFU), "yes")
 	CFLAGS += -D MESH_DFU=1
 	C_SOURCE_FILES += $(RBC_MESH)/src/dfu_app.c
