@@ -123,10 +123,11 @@ int main(void)
 
   mesh_control_init();
 
+#if LEDS_NUMBER > 0
   nrf_gpio_cfg_output(LED_START + LED_GREEN);
   nrf_gpio_cfg_output(LED_START + LED_RED);
   nrf_gpio_cfg_output(LED_START + LED_BLUE);
-
+#endif
 
   /* Enable Softdevice (including sd_ble before framework */
   SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
