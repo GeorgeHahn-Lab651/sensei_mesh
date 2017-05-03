@@ -65,7 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #if defined(WITH_ACK_MASTER) || defined (WITHOUT_ACK_MASTER)
           #define RBC_MESH_HANDLE_CACHE_ENTRIES           (105)
     #else
-          #define RBC_MESH_HANDLE_CACHE_ENTRIES           (20)
+          #define RBC_MESH_HANDLE_CACHE_ENTRIES           (70)
     #endif
 #endif
 
@@ -74,7 +74,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #if defined(WITH_ACK_MASTER) || defined (WITHOUT_ACK_MASTER)
          #define RBC_MESH_DATA_CACHE_ENTRIES             (105)
     #else
-         #define RBC_MESH_DATA_CACHE_ENTRIES             (20)
+         #define RBC_MESH_DATA_CACHE_ENTRIES             (70)
     #endif
 #endif
 
