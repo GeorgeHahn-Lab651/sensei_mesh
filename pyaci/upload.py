@@ -89,7 +89,6 @@ class Uploader(object):
         while True:
             updates = self.get_sensor_updates()
             if len(updates) > 0:
-                continue
                 obs = [self.radio_obs_from_update(update) for update in updates]
                 flattened_obs = [ob for sublist in obs for ob in sublist]
                 if len(flattened_obs) > 0:
