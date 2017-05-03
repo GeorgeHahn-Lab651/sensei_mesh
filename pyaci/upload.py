@@ -25,13 +25,22 @@ class Uploader(object):
         self.aci = AciUart.AciUart(port=sensei_config['mesh_network']['serial_path'], baudrate=115200)
         self.classroom_id = sensei_config["classroom_id"]
 
+    def handle_heartbeat(self, hb):
+        print(str.format("handling heartbeat: %s" %(hb)))
+        if hb.epoch_seconds != hb.received_at:
+          print(str.format("Sensor %d clock offset detected; issuing sync_time." %(hb.sensor_id)))
+          self.sync_time()
+
     def get_sensor_updates(self):
         updates = []
         while True:
             try:
                 evt = self.aci.events_queue.get_nowait()
+                print(str.format("evt = %s" %(evt)))
                 if isinstance(evt, AciEvent.AciEventNew) and evt.is_sensor_update():
                     updates.append(evt.sensor_values())
+                elif isinstance(evt, AciEvent.AciEventAppEvt) and evt.is_heartbeat():
+                    self.handle_heartbeat(evt.heartbeat_msg())
             except Empty:
                 break
         return updates
@@ -80,6 +89,7 @@ class Uploader(object):
         while True:
             updates = self.get_sensor_updates()
             if len(updates) > 0:
+                continue
                 obs = [self.radio_obs_from_update(update) for update in updates]
                 flattened_obs = [ob for sublist in obs for ob in sublist]
                 if len(flattened_obs) > 0:
@@ -91,10 +101,11 @@ class Uploader(object):
                         accelerometer_obs.append(ob)
                 if len(accelerometer_obs) > 0:
                     self.api.upload_accelerometer_observations(accelerometer_obs)
-            elif time.time() - self.last_time_sync > Uploader.TIME_SYNC_INTERVAL:
-                self.sync_time()
             else:
                 time.sleep(0.5)
+
+            if time.time() - self.last_time_sync > Uploader.TIME_SYNC_INTERVAL:
+                self.sync_time()
 
 
 if __name__ == '__main__':

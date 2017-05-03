@@ -71,7 +71,7 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
     case RBC_MESH_EVENT_TYPE_CONFLICTING_VAL:
     case RBC_MESH_EVENT_TYPE_NEW_VAL:
     case RBC_MESH_EVENT_TYPE_UPDATE_VAL:
-      if (p_evt->params.rx.value_handle == MESH_CONTROL_HANDLE) {
+      if (p_evt->params.rx.value_handle == MESH_CONTROL_HANDLE && p_evt->params.rx.data_len == sizeof(mesh_control_t)) {
         mesh_control_update_config((mesh_control_t*)p_evt->params.rx.p_data);
       }
       break;
@@ -122,6 +122,11 @@ int main(void)
   bsp_init(BSP_INIT_BUTTONS & BSP_INIT_LED, 0, 0);
 
   mesh_control_init();
+
+  nrf_gpio_cfg_output(LED_START + LED_GREEN);
+  nrf_gpio_cfg_output(LED_START + LED_RED);
+  nrf_gpio_cfg_output(LED_START + LED_BLUE);
+
 
   /* Enable Softdevice (including sd_ble before framework */
   SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);

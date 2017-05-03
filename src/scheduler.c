@@ -54,7 +54,6 @@ static void periodic_timer_cb(void * p_context)
   DBG_TICK_PIN(6);
 
   if (m_current_time % mesh_control_get_wake_interval() == 0) {
-    //report_debug_register();
     SET_LED(LED_GREEN);
     app_timer_cnt_get(&m_clock_second_start_counter_value);
     m_scheduler_state = SCHEDULER_STATE_BEFORE_HB;
