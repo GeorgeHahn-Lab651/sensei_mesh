@@ -5,6 +5,7 @@ from aci import AciCommand
 from aci_serial import AciUart
 from aci import AciEvent
 from queue import Empty
+import sys
 import time
 import sensei_cmd
 from sensei import *
@@ -16,13 +17,18 @@ import os.path
 class Uploader(object):
     # Synchronize once every minute
     TIME_SYNC_INTERVAL=60
+    NO_DATA_TIMEOUT=35
 
     MESH_HANDLE_MESH_CONTROL = 0x0201
 
-    def __init__(self, sensei_config):
+    def __init__(self, sensei_config, options):
+        self.sensei_config = sensei_config
+        self.options = options
+
+        self.aci = None
         api_url = sensei_config["server"]["url"] + 'api/v1/'
+        self.restart_serial()
         self.api = Api(api_url, sensei_config["server"]["username"], sensei_config["server"]["password"])
-        self.aci = AciUart.AciUart(port=sensei_config['mesh_network']['serial_path'], baudrate=115200)
         self.classroom_id = sensei_config["classroom_id"]
 
     def handle_heartbeat(self, hb):
@@ -36,6 +42,7 @@ class Uploader(object):
         while True:
             try:
                 evt = self.aci.events_queue.get_nowait()
+                self.last_event = time.time()
                 print(str.format("evt = %s" %(evt)))
                 if isinstance(evt, AciEvent.AciEventNew) and evt.is_sensor_update():
                     updates.append(evt.sensor_values())
@@ -76,6 +83,56 @@ class Uploader(object):
             return AccelerometerObservation(self.classroom_id, update.sensor_id,
                 ob_time, update.accel_x, update.accel_y, update.accel_z)
 
+    def restart_serial(self):
+        if self.aci:
+            print("Restarting serial connection")
+            self.aci.stop()
+        else:
+            print("Starting serial connection")
+
+        device = self.sensei_config['mesh_network']['serial_path']
+        self.aci = AciUart.AciUart(port=device, baudrate=115200)
+        self.last_event = time.time()
+
+    def upload_radio_observations(self, obs):
+        retries = 3
+        while (retries > 0):
+            try:
+                self.api.upload_radio_observations(obs)
+                return
+            except
+                e = sys.exc_info()[0]
+                print(str.format("Exception while uploading radio obs: %s" %(e)))
+                retries = retries - 1
+                sleep(1)
+
+    def upload_accelerometer_observations(self, obs):
+        retries = 3
+        while (retries > 0):
+            try:
+                self.api.upload_accelerometer_observations(obs)
+                return
+            except
+                e = sys.exc_info()[0]
+                print(str.format("Exception while uploading accelerometer data: %s" %(e)))
+                retries = retries - 1
+                sleep(1)
+
+
+    def handle_updates_from_serial(self, updates):
+        if not self.options.dry_run:
+            obs = [self.radio_obs_from_update(update) for update in updates]
+            flattened_obs = [ob for sublist in obs for ob in sublist]
+            if len(flattened_obs) > 0:
+                self.upload_radio_observations(flattened_obs)
+            accelerometer_obs = []
+            for update in updates:
+                ob = self.accelerometer_measurement_from_update(update)
+                if ob:
+                    accelerometer_obs.append(ob)
+            if len(accelerometer_obs) > 0:
+                self.upload_accelerometer_observations(accelerometer_obs)
+
     def run(self):
         # Wait for serial connection to be ready
         time.sleep(3)
@@ -89,32 +146,29 @@ class Uploader(object):
         while True:
             updates = self.get_sensor_updates()
             if len(updates) > 0:
-                obs = [self.radio_obs_from_update(update) for update in updates]
-                flattened_obs = [ob for sublist in obs for ob in sublist]
-                if len(flattened_obs) > 0:
-                    self.api.upload_radio_observations(flattened_obs)
-                accelerometer_obs = []
-                for update in updates:
-                    ob = self.accelerometer_measurement_from_update(update)
-                    if ob:
-                        accelerometer_obs.append(ob)
-                if len(accelerometer_obs) > 0:
-                    self.api.upload_accelerometer_observations(accelerometer_obs)
+                handle_updates_from_serial(updates)
             else:
                 time.sleep(0.5)
 
             if time.time() - self.last_time_sync > Uploader.TIME_SYNC_INTERVAL:
                 self.sync_time()
 
+            if time.time() - self.last_event > Uploader.NO_DATA_TIMEOUT:
+                self.restart_serial()
 
 if __name__ == '__main__':
 
-    config_path = expanduser("~") + "/.sensei.yaml"
+    parser = ArgumentParser()
+    parser.add_argument("-c", "--config", dest="config", help="Configuration file, e.g. ~/.sensei.yaml")
+    parser.add_argument("-d", "--dry-run", dest="dry_run", help="Dry run. Do not actually upload anything")
+    options = parser.parse_args()
+
+    config_path = options.config or expanduser("~") + "/.sensei.yaml"
     if os.path.isfile(config_path):
         with open(config_path, 'r') as stream:
             try:
                 sensei_config = yaml.load(stream)
-                uploader = Uploader(sensei_config)
+                uploader = Uploader(sensei_config, options)
                 uploader.run()
             except yaml.YAMLError as exc:
                 print(exc)
