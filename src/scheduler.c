@@ -128,7 +128,7 @@ static void offset_timer_cb(void * p_context) {
       break;
     case SCHEDULER_STATE_REPORTING:
       CLEAR_LED(LED_GREEN);
-      if (m_sleep_enabled && clock_is_synchronized()) {
+      if (m_sleep_enabled) {
         do_sleep();
       }
       m_scheduler_state = SCHEDULER_STATE_SLEEP;
