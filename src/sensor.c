@@ -5,6 +5,7 @@
 #include "rbc_mesh.h"
 #include "scheduler.h"
 #include "battery.h"
+#include "jostle_detect.h"
 #include "handles.h"
 #include "shoe_accel.h"
 #include <app_error.h>
@@ -16,6 +17,7 @@ void sensor_init() {
 #ifdef ACCEL_ADXL337
   shoe_accel_init();
 #endif
+  jostle_detect_init();
 
   uint32_t error_code;
   error_code = rbc_mesh_value_enable(SENSOR_HANDLE);
@@ -32,7 +34,10 @@ void gather_sensor_data() {
   memset(&m_value, 0, sizeof(sensor_value_t));
   m_value.valid_time = get_clock_time();
   m_value.battery = get_battery_adc();
-  //m_value.status = ??
+  if (jostle_detect_get_flag()) {
+    m_value.status |= STATUS_FLAG_JOSTLE_DETECTED;
+    jostle_detect_clear_flag();
+  }
 
 #ifdef ACCEL_ADXL337
   read_shoe_accel(&m_value.accel_x, &m_value.accel_y, &m_value.accel_z);

@@ -94,7 +94,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 C_SOURCE_FILES += src/main.c src/config.c src/sensor.c src/app_cmd.c \
  	src/scheduler.c src/proximity.c src/heartbeat.c src/battery.c src/shoe_accel.c \
-	src/app_evt.c src/mesh_control.c bsp/bsp.c
+	src/app_evt.c src/mesh_control.c bsp/bsp.c src/i2c.c src/jostle_detect.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
@@ -134,7 +134,9 @@ C_SOURCE_FILES += $(RBC_MESH)/src/rand.c
 C_SOURCE_FILES += $(COMPONENTS)/ble/common/ble_advdata.c
 C_SOURCE_FILES += $(COMPONENTS)/toolchain/system_nrf51.c
 C_SOURCE_FILES += $(COMPONENTS)/softdevice/common/softdevice_handler/softdevice_handler.c
-
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/twi_master/incubated/twi_hw_master.c
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/gpiote/nrf_drv_gpiote.c
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/common/nrf_drv_common.c
 
 # assembly files common to all targets
 #ASM_SOURCE_FILES  += $(COMPONENTS)/toolchain/gcc/gcc_startup_nrf51.s
@@ -162,8 +164,11 @@ INC_PATHS += -I$(COMPONENTS)/toolchain/gcc
 INC_PATHS += -I$(COMPONENTS)/libraries/util
 INC_PATHS += -I$(COMPONENTS)/libraries/timer
 INC_PATHS += -I$(COMPONENTS)/ble/common
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/common
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/pstorage
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/twi_master/incubated/
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/gpiote
 
 INC_PATHS += -I$(COMPONENTS)/toolchain/gcc
 INC_PATHS += -I$(COMPONENTS)/toolchain

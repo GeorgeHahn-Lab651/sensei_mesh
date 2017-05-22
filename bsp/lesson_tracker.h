@@ -7,6 +7,8 @@ extern "C" {
 
 #define SIMBLEE
 
+#define MMA8541
+
 #define LEDS_NUMBER    0
 #define BUTTONS_NUMBER 0
 

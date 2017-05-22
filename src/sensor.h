@@ -8,6 +8,8 @@
 
 #define MAX_SENSOR_ID = 64
 
+#define STATUS_FLAG_JOSTLE_DETECTED (1<<0)
+
 typedef __packed_armcc struct
 {
     uint8_t proximity_ids[MAX_PROXIMITY_TRACKING_COUNT];
