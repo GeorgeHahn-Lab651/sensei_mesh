@@ -63,7 +63,7 @@ void jostle_detect_init() {
   err_code = nrf_drv_gpiote_init();
   APP_ERROR_CHECK(err_code);
 
-  nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(true);
+  nrf_drv_gpiote_in_config_t in_config = GPIOTE_CONFIG_IN_SENSE_TOGGLE(false);
   in_config.pull = NRF_GPIO_PIN_PULLUP;
 
   err_code = nrf_drv_gpiote_in_init(INT1_GPIO_PIN, &in_config, motion_handler);
@@ -77,13 +77,14 @@ void jostle_detect_init() {
 
   // enable 4G range
   write_register(MMA8451_REG_XYZ_DATA_CFG, MMA8451_RANGE_4_G);
-  // High res
-  write_register(MMA8451_REG_CTRL_REG2, 0x02);
+
+  // Low power mode
+  write_register(MMA8451_REG_CTRL_REG2, 0b00000011);
 
   // Setup motion detection
   write_register(MMA8451_REG_FF_MT_CFG,   0b11111000);  // Enable motion, and x,y,z
   write_register(MMA8451_REG_FF_MT_THS,   17);  // Threshold: 17 * 0.063g = 1.071g
-  write_register(MMA8451_REG_FF_MT_COUNT, 15);  // debounce counter: 15 * 1.25ms = 18.75ms
+  write_register(MMA8451_REG_FF_MT_COUNT, 1);  // debounce counter: 20ms @ 50hz
 
   // Setup interrupts
   write_register(MMA8451_REG_CTRL_REG4, INT_EN_FF_MT | INT_EN_PULSE);  // Enable Freefall/Motion int, and pulse
@@ -93,11 +94,11 @@ void jostle_detect_init() {
   //write_register(MMA8451_REG_PL_CFG, 0x40);
 
   // ASLP_RATE = 50hz
-  // ODR = 800hz (1.25ms period)
+  // ODR = 50hz
   // LNOISE = 1
   // F_READ = normal
   // ACTIVE = active
-  write_register(MMA8451_REG_CTRL_REG1, 0b00000101);
+  write_register(MMA8451_REG_CTRL_REG1, 0b00100101);
 }
 
 bool jostle_detect_get_flag() {
