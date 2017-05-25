@@ -1,0 +1,7 @@
+server:
+  url: http://0.0.0.0:5000/
+  username: super@example.com
+  password: password
+classroom_id: 1
+mesh_network:
+  serial_path: /dev/cu.usbserial-A105RB12
