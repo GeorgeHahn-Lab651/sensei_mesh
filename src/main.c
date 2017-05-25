@@ -19,6 +19,7 @@
 #include "handles.h"
 #include "bsp.h"
 #include "mesh_control.h"
+#include "nrf_adv_conn.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -77,6 +78,9 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
       break;
     case RBC_MESH_EVENT_TYPE_TX:
     case RBC_MESH_EVENT_TYPE_INITIALIZED:
+      /* init BLE gateway softdevice application: */
+      nrf_adv_conn_init();
+      break;
     case RBC_MESH_EVENT_TYPE_DFU_NEW_FW_AVAILABLE:
     case RBC_MESH_EVENT_TYPE_DFU_RELAY_REQ:
     case RBC_MESH_EVENT_TYPE_DFU_SOURCE_REQ:
@@ -115,6 +119,24 @@ static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
     received_heartbeat((heartbeat_ad_t*)&params->p_payload[2], params->rssi);
   }
 }
+
+static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
+{
+//     dm_ble_evt_handler(p_ble_evt);
+//     ble_hrs_on_ble_evt(&m_hrs, p_ble_evt);
+//     ble_bas_on_ble_evt(&m_bas, p_ble_evt);
+//     ble_conn_params_on_ble_evt(p_ble_evt);
+//     bsp_btn_ble_on_ble_evt(p_ble_evt);
+// #ifdef BLE_DFU_APP_SUPPORT
+//     /** @snippet [Propagating BLE Stack events to DFU Service] */
+//     ble_dfu_on_ble_evt(&m_dfus, p_ble_evt);
+//     /** @snippet [Propagating BLE Stack events to DFU Service] */
+// #endif // BLE_DFU_APP_SUPPORT
+//     on_ble_evt(p_ble_evt);
+//     ble_advertising_on_ble_evt(p_ble_evt);
+  rbc_mesh_ble_evt_handler(p_ble_evt);
+}
+
 
 int main(void)
 {
@@ -173,6 +195,9 @@ int main(void)
   config_init();
   get_config(&app_config);
 
+  error_code = softdevice_ble_evt_handler_set(ble_evt_dispatch);
+  APP_ERROR_CHECK(error_code);
+
   // Setup handler for watching for heartbeat messages
   rbc_mesh_packet_peek_cb_set(packet_peek_cb);
 
@@ -215,6 +240,9 @@ int main(void)
   //   __SEV();
   //   __WFE();
   // }
+
+  /* init BLE gateway softdevice application: */
+  nrf_adv_conn_init();
 
   rbc_mesh_event_t evt;
   while (true) {
