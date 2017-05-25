@@ -98,6 +98,8 @@ class AciCmdRsp(AciEventPkt):
         return str.format("%s length:%d opcode:0x%02x command_opcode:%s status_code:%s data:%s" %(self.__class__.__name__, self.Len, self.OpCode, AciCommand.AciCommandLookUp(self.CommandOpCode), AciStatusLookUp(self.StatusCode), self.Data))
 
 class SensorValues(object):
+    STATUS_JOSTLE_FLAG = 0x01
+
     def __init__(self, sensor_id, data):
         self.sensor_id = sensor_id
         if len(data) == 19:
@@ -112,6 +114,7 @@ class SensorValues(object):
             self.is_valid = True
         else:
             self.is_valid = False
+            self.status = None
             self.data = data
     def __repr__(self):
         if self.is_valid:

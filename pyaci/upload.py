@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from aci import AciCommand
 from aci_serial import AciUart
 from aci import AciEvent
+from aci.AciEvent import SensorValues
 from queue import Empty
 import sys
 import time
@@ -33,7 +34,7 @@ class Uploader(object):
 
     def handle_heartbeat(self, hb):
         print(str.format("handling heartbeat: %s" %(hb)))
-        if hb.epoch_seconds != hb.received_at:
+        if hb.epoch_seconds != hb.received_at or abs(time.time() - hb.epoch_seconds) > 5:
           print(str.format("Sensor %d clock offset detected; issuing sync_time." %(hb.sensor_id)))
           self.sync_time()
 
@@ -94,30 +95,26 @@ class Uploader(object):
         self.aci = AciUart.AciUart(port=device, baudrate=115200)
         self.last_event = time.time()
 
-    def upload_radio_observations(self, obs):
-        retries = 3
-        while (retries > 0):
+    def handle_exceptions_with_sleep_retry(self, callable, sleep_duration, num_retries, description):
+        while (num_retries > 0):
             try:
-                self.api.upload_radio_observations(obs)
-                return
-            except
-                e = sys.exc_info()[0]
-                print(str.format("Exception while uploading radio obs: %s" %(e)))
-                retries = retries - 1
-                sleep(1)
+                return callable()
+            except Exception as e:
+                print(str.format("Exception while %s: %s" %(description, repr(e))))
+                num_retries = num_retries - 1
+                time.sleep(sleep_duration)
+
+
+    def upload_radio_observations(self, obs):
+        self.handle_exceptions_with_sleep_retry(lambda: self.api.upload_radio_observations(obs), 1, 3, "uploading radio obs")
 
     def upload_accelerometer_observations(self, obs):
-        retries = 3
-        while (retries > 0):
-            try:
-                self.api.upload_accelerometer_observations(obs)
-                return
-            except
-                e = sys.exc_info()[0]
-                print(str.format("Exception while uploading accelerometer data: %s" %(e)))
-                retries = retries - 1
-                sleep(1)
+        self.handle_exceptions_with_sleep_retry(lambda: self.api.upload_accelerometer_observations(obs), 1, 3, "uploading accelerometer obs")
 
+    def upload_accelerometer_event(self, event_type, sensor_id, valid_time):
+        ob_time = datetime.datetime.utcfromtimestamp(valid_time)
+        events = [AccelerometerEvent(self.classroom_id, sensor_id, ob_time, event_type)]
+        self.handle_exceptions_with_sleep_retry(lambda: self.api.upload_accelerometer_events(events), 1, 3, "uploading accelerometer obs")
 
     def handle_updates_from_serial(self, updates):
         if not self.options.dry_run:
@@ -130,6 +127,9 @@ class Uploader(object):
                 ob = self.accelerometer_measurement_from_update(update)
                 if ob:
                     accelerometer_obs.append(ob)
+                if update.status & SensorValues.STATUS_JOSTLE_FLAG:
+                    self.upload_accelerometer_event('jostle', update.sensor_id, update.valid_time)
+                    print("Jostle from %d" %(update.sensor_id))
             if len(accelerometer_obs) > 0:
                 self.upload_accelerometer_observations(accelerometer_obs)
 
@@ -144,9 +144,9 @@ class Uploader(object):
         self.sync_time()
 
         while True:
-            updates = self.get_sensor_updates()
+            updates = [u for u in self.get_sensor_updates() if u.is_valid]
             if len(updates) > 0:
-                handle_updates_from_serial(updates)
+                self.handle_updates_from_serial(updates)
             else:
                 time.sleep(0.5)
 
