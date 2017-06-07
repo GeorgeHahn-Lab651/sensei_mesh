@@ -9,6 +9,7 @@ from aci_serial import AciUart
 from queue import *
 import time
 import sensei_cmd
+import struct
 
 class Interactive(object):
     def __init__(self, acidev):
@@ -90,6 +91,24 @@ class Interactive(object):
 
     def setConfig(self, sensor_id, serial_enabled, mesh_channel, sleep_enabled):
         self.runCommand(sensei_cmd.SetConfig(sensor_id, serial_enabled, mesh_channel, sleep_enabled))
+
+    def setMeshControl(self, wake_interval, tx_power, ble_enabled):
+        power_levels = {
+            0: 0x00,
+            4: 0x04,
+            -30: 0xD8,
+            -20: 0xEC,
+            -16: 0xF0,
+            -12: 0xF4,
+            -8: 0xF8,
+            -4: 0xFC
+        }
+        power_code = power_levels.get(tx_power)
+        if tx_power == None:
+            raise Exception("Bad tx power level specified: %s" % tx_power)
+
+        data = struct.pack("<HBB", wake_interval, power_code, ble_enabled)
+        self.ValueSet(sensei_cmd.MESH_HANDLE_MESH_CONTROL, data)
 
     def getConfig(self):
         self.runCommand(sensei_cmd.GetConfig())

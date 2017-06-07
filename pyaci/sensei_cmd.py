@@ -1,6 +1,8 @@
 import time
 import struct
 
+MESH_HANDLE_MESH_CONTROL = 0x0201
+
 class SetTime(object):
     OpCode = 0x02
 
@@ -24,7 +26,6 @@ class SetConfig(object):
         self.serial_enabled = serial_enabled
         self.mesh_channel = mesh_channel
         self.sleep_enabled = sleep_enabled
-
 
     def serialize(self):
         return struct.pack("BBBBB", self.OpCode, self.sensor_id, self.serial_enabled, self.mesh_channel, self.sleep_enabled)

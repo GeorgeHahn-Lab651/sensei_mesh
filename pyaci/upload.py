@@ -20,8 +20,6 @@ class Uploader(object):
     TIME_SYNC_INTERVAL=60
     NO_DATA_TIMEOUT=35
 
-    MESH_HANDLE_MESH_CONTROL = 0x0201
-
     def __init__(self, sensei_config, options):
         self.sensei_config = sensei_config
         self.options = options
@@ -63,10 +61,6 @@ class Uploader(object):
 
     def get_config(self):
         return self.run_app_command(sensei_cmd.GetConfig())
-
-    def set_mesh_control(self, wake_interval):
-        data = struct.pack("<HB", wake_interval, 0)
-        self.aci.ValueSet(MESH_HANDLE_MESH_CONTROL, data)
 
     def radio_obs_from_update(self, update):
         if not update.is_valid:
