@@ -177,11 +177,11 @@ INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/spi_slave
 
-CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/cores/arduino
-CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/variants/Simblee
-CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/system/Simblee
-CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/system/Simblee/include
-CXX_INC_PATHS += -I/Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2/system/CMSIS/CMSIS/Include
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/variants/Simblee
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee/include
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/CMSIS/CMSIS/Include
 
 OBJECT_DIRECTORY = _build
 LISTING_DIRECTORY = $(OBJECT_DIRECTORY)
@@ -205,7 +205,7 @@ CFLAGS += -D S110
 CFLAGS += -D SOFTDEVICE_PRESENT
 CFLAGS += -D $(TARGET_BOARD)
 CFLAGS += -mcpu=cortex-m0
-CFLAGS += -mthumb -mabi=aapcs --std=gnu99
+CFLAGS += -mthumb -mabi=aapcs --std=gnu11
 CFLAGS += -Wall -Werror
 CFLAGS += -Wa,-adhln
 CFLAGS += -mfloat-abi=soft
@@ -221,8 +221,7 @@ CXXFLAGS += -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-rtti
 CXXFLAGS += -fno-exceptions -fno-builtin -MMD -mcpu=cortex-m0 -DF_CPU=16000000
 CXXFLAGS += -DARDUINO=10801 -mthumb -D__Simblee__
 
-#CXX := "$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-g++"
-CXX := "/Users/pete/Library/Arduino15/packages/Simblee/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++"
+CXX := "$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-g++"
 
 LDFLAGS += -Xlinker -Map=$(LISTING_DIRECTORY)/$(OUTPUT_NAME).map
 LDFLAGS += -mthumb -mabi=aapcs -L $(TEMPLATE_PATH) -T$(LINKER_SCRIPT)
