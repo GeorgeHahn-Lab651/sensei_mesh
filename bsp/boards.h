@@ -48,6 +48,10 @@
   #include "shoe_sensor.h"
 #elif defined(BOARD_LESSON_TRACKER)
   #include "lesson_tracker.h"
+#elif defined(BOARD_SHOE_SENSORv2)
+  #include "shoe_sensor_nrf52.h"
+#elif defined(BOARD_LESSON_TRACKERv2)
+  #include "lesson_tracker_nrf52.h"
 #elif defined(BOARD_RFD77201)
   #include "rfd77201.h"
 #else

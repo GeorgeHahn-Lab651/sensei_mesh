@@ -4,29 +4,122 @@
 # Selectable build options
 #------------------------------------------------------------------------------
 
-TARGET_BOARD         ?= BOARD_RFD77201
-#TARGET_BOARD         ?= BOARD_SHOE_SENSOR
+#TARGET_BOARD         ?= BOARD_RFD77201
+TARGET_BOARD         ?= BOARD_SHOE_SENSORv2
+
+#SOC_FAMILY           := Simblee
+#SOC_FAMILY           := nRF51
+SOC_FAMILY           := nRF52
 
 USE_DFU              ?= "no"
+
+NRF51_SDK_BASE      := C:/Users/georg/sdks/nRF51_SDK_8.1.0_b6ed55f
+NRF52_SDK_BASE      := C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556
+SIMBLEE_BASE        := C:/Users/georg/sdks/Simblee_248
+
+GNU_INSTALL_ROOT := C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update
+GNU_VERSION := 6.3.1
+GNU_PREFIX := arm-none-eabi
 
 #------------------------------------------------------------------------------
 # Define relative paths to SDK components
 #------------------------------------------------------------------------------
 
-SDK_BASE      := /Users/pete/dev/nrf_sdk
-COMPONENTS    := $(SDK_BASE)/components
-TEMPLATE_PATH := $(COMPONENTS)/toolchain/gcc
-SIMBLEE_BASE  := /Users/pete/Library/Arduino15/packages/Simblee/hardware/Simblee/1.1.2
-RBC_MESH  		:= rbc_mesh
+ifeq ($(SOC_FAMILY),Simblee)
+$(info Building for Simblee)
 
+SDK_BASE      := $(NRF51_SDK_BASE)
+COMPONENTS    := $(SDK_BASE)/components
 
 LINKER_SCRIPT := $(SIMBLEE_BASE)/variants/Simblee/linker_scripts/gcc/Simblee.ld
-RFD_LOADER 		:= $(SIMBLEE_BASE)/RFDLoader_osx
-#SERIAL_PORT 	:= /dev/cu.usbserial-DN00CSZ7  # left
-SERIAL_PORT 	:= /dev/cu.usbserial-DN00D34P  # right
-#SERIAL_PORT 	:= /dev/cu.usbserial-A105RB12
-#SERIAL_PORT   := /dev/cu.usbserial-FTZ86FTC  # tag-connect
-#SERIAL_PORT   := /dev/cu.usbserial-DO00C2G2  # Breadboard setup
+
+CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
+CXX_SOURCE_FILES += $(SIMBLEE_BASE)/variants/Simblee/variant.cpp
+
+INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
+INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee
+INC_PATHS += -I$(SIMBLEE_BASE)/variants/Simblee
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/variants/Simblee
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee/include
+CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/CMSIS/CMSIS/Include
+
+LDFLAGS += -L$(SIMBLEE_BASE)/variants/Simblee
+LIBS += -lSimbleeSystem -lSimblee -lSimbleeBLE -lSimbleeGZLL -lSimbleeForMobile -lSimbleeCOM
+
+CFLAGS += -D NRF51
+CFLAGS += -D S110
+CFLAGS += -mcpu=cortex-m0
+CFLAGS += -mfloat-abi=soft
+
+CXXFLAGS += -MMD -mcpu=cortex-m0 -DF_CPU=16000000
+CXXFLAGS += -DARDUINO=10801 -D__Simblee__
+
+LDFLAGS += -mcpu=cortex-m0
+
+ASMFLAGS += -D NRF51
+ASMFLAGS += -D S110
+
+# Detect OS and use correct RFD Loader
+ifeq ($(detected_OS),Windows)
+    RFD_LOADER 		:= $(SIMBLEE_BASE)/RFDLoader.exe
+endif
+ifeq ($(detected_OS),Darwin)  # Mac OS X
+    RFD_LOADER 		:= $(SIMBLEE_BASE)/RFDLoader_osx
+endif
+ifeq ($(detected_OS),Linux)
+    RFD_LOADER 		:= $(SIMBLEE_BASE)/RFDLoader_linux
+endif
+
+endif
+
+ifeq ($(SOC_FAMILY),nRF52)
+$(info Building for nRF52)
+
+SDK_BASE      := $(NRF52_SDK_BASE)
+COMPONENTS    := $(SDK_BASE)/components
+LINKER_SCRIPT := $(SDK_BASE)/ble_mesh_v0.9.1-Alpha/lib/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf52832_xxaa.ld
+# More linker scripts at: C:\Users\georg\sdks\nRF5_SDK_13.1.0_7ca7556\components\toolchain\gcc
+# The one I probably need: C:\Users\georg\sdks\nRF5_SDK_13.1.0_7ca7556\components\softdevice\s132\toolchain\armgcc
+
+# assembly files common to all targets
+ASM_SOURCE_FILES  += $(COMPONENTS)/toolchain/gcc/gcc_startup_nrf52.S
+
+#INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
+#CXX_INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
+
+INC_PATHS += -I$(SDK_BASE)/config/
+
+INC_PATHS += -I$(COMPONENTS)/toolchain/cmsis/include
+INC_PATHS += -I$(COMPONENTS)/toolchain/
+CXX_INC_PATHS += -I$(COMPONENTS)/toolchain/cmsis/include
+CXX_INC_PATHS += -I$(COMPONENTS)/toolchain/
+
+# Softdevice
+INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers
+INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers/nrf52
+CXX_INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers
+CXX_INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers/nrf52
+
+CFLAGS += -D NRF52
+CFLAGS += -D S132
+CFLAGS += -mcpu=cortex-m4
+CFLAGS += -mfloat-abi=hard
+
+CXXFLAGS += -MMD -mcpu=cortex-m4 -DF_CPU=64000000
+CXXFLAGS += -DARDUINO=10801 #???
+
+LDFLAGS += -mcpu=cortex-m4
+
+ASMFLAGS += -D NRF52
+ASMFLAGS += -D S132
+
+endif # SOC_FAMILY
+
+TEMPLATE_PATH := $(COMPONENTS)/toolchain/gcc
+RBC_MESH      := rbc_mesh
+
 
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
 	SERIAL_STRING := "_serial"
@@ -41,11 +134,6 @@ else
 endif
 
 OUTPUT_NAME := rbc_mesh$(SERIAL_STRING)$(DFU_STRING)_$(TARGET_BOARD)
-
-
-GNU_INSTALL_ROOT := /usr/local
-GNU_VERSION := 4.9.3
-GNU_PREFIX := arm-none-eabi
 
 #------------------------------------------------------------------------------
 # Proceed cautiously beyond this point.  Little should change.
@@ -97,9 +185,6 @@ C_SOURCE_FILES += src/main.c src/config.c src/sensor.c src/app_cmd.c \
 	src/app_evt.c src/mesh_control.c bsp/bsp.c src/i2c.c src/jostle_detect.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 
-CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
-CXX_SOURCE_FILES += $(SIMBLEE_BASE)/variants/Simblee/variant.cpp
-
 CFLAGS += -DRBC_MESH_SERIAL=1 -DBSP_SIMPLE
 C_SOURCE_FILES += $(RBC_MESH)/src/serial_handler_uart.c
 C_SOURCE_FILES += $(RBC_MESH)/src/mesh_aci.c
@@ -138,12 +223,9 @@ C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/twi_master/incubated/twi_hw_master.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/gpiote/nrf_drv_gpiote.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/common/nrf_drv_common.c
 
-# assembly files common to all targets
-#ASM_SOURCE_FILES  += $(COMPONENTS)/toolchain/gcc/gcc_startup_nrf51.s
-LDFLAGS += -L$(SIMBLEE_BASE)/variants/Simblee
-LIBS += -lSimbleeSystem -lSimblee -lSimbleeBLE -lSimbleeGZLL -lSimbleeForMobile -lSimbleeCOM
 vpath %.c $(C_PATHS)
 
+# TODO: Replace this proprietary blob with Arduino-nRF5 or remove
 ARDUINO_CORE = arduino_core/core.a
 
 
@@ -154,9 +236,6 @@ INC_PATHS += -I$(RBC_MESH)
 INC_PATHS += -I$(RBC_MESH)/include
 INC_PATHS += -Ibsp
 INC_PATHS += -I../../../RTT
-INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
-INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee
-INC_PATHS += -I$(SIMBLEE_BASE)/variants/Simblee
 
 INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
 INC_PATHS += -I$(COMPONENTS)/softdevice/common/softdevice_handler
@@ -177,11 +256,6 @@ INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/spi_slave
 
-CXX_INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
-CXX_INC_PATHS += -I$(SIMBLEE_BASE)/variants/Simblee
-CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee
-CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee/include
-CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/CMSIS/CMSIS/Include
 
 OBJECT_DIRECTORY = _build
 LISTING_DIRECTORY = $(OBJECT_DIRECTORY)
@@ -199,16 +273,12 @@ endif
 # flags common to all targets
 #CFLAGS += -save-temps
 CFLAGS += $(DEBUG_FLAGS)
-CFLAGS += -D NRF51
 CFLAGS += -D BLE_STACK_SUPPORT_REQD
-CFLAGS += -D S110
 CFLAGS += -D SOFTDEVICE_PRESENT
 CFLAGS += -D $(TARGET_BOARD)
-CFLAGS += -mcpu=cortex-m0
 CFLAGS += -mthumb -mabi=aapcs --std=gnu11
 CFLAGS += -Wall -Werror
 CFLAGS += -Wa,-adhln
-CFLAGS += -mfloat-abi=soft
 CFLAGS += -ffunction-sections
 CFLAGS += -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin
@@ -218,14 +288,12 @@ CFLAGS += -fno-builtin
 # -DF_CPU=16000000 -DARDUINO=10801 -D__PROJECT__="ledtest.ino" -mthumb -D__Simblee__
 
 CXXFLAGS += -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-rtti
-CXXFLAGS += -fno-exceptions -fno-builtin -MMD -mcpu=cortex-m0 -DF_CPU=16000000
-CXXFLAGS += -DARDUINO=10801 -mthumb -D__Simblee__
+CXXFLAGS += -fno-exceptions -fno-builtin -MMD -mthumb
 
 CXX := "$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-g++"
 
 LDFLAGS += -Xlinker -Map=$(LISTING_DIRECTORY)/$(OUTPUT_NAME).map
 LDFLAGS += -mthumb -mabi=aapcs -L $(TEMPLATE_PATH) -T$(LINKER_SCRIPT)
-LDFLAGS += -mcpu=cortex-m0
 LDFLAGS += $(DEBUG_FLAGS)
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS += --specs=nano.specs -lc -lnosys
@@ -233,9 +301,7 @@ LDFLAGS += --specs=nano.specs -lc -lnosys
 # Assembler flags
 ASMFLAGS += $(DEBUG_FLAGS)
 ASMFLAGS += -x assembler-with-cpp
-ASMFLAGS += -D NRF51
 ASMFLAGS += -D BLE_STACK_SUPPORT_REQD
-ASMFLAGS += -D S110
 ASMFLAGS += -D SOFTDEVICE_PRESENT
 ASMFLAGS += -D $(TARGET_BOARD)
 
@@ -338,6 +404,7 @@ echosize:
 .PHONY: install
 install: all
 	@echo Installing: $(OUTPUT_NAME).hex
+	# TODO: handle nRF52
 	$(NO_ECHO)$(RFD_LOADER) $(SERIAL_PORT) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 
 clean:
