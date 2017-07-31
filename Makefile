@@ -79,9 +79,10 @@ $(info Building for nRF52)
 
 SDK_BASE      := $(NRF52_SDK_BASE)
 COMPONENTS    := $(SDK_BASE)/components
-LINKER_SCRIPT := $(SDK_BASE)/ble_mesh_v0.9.1-Alpha/lib/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf52832_xxaa.ld
+LINKER_SCRIPT := $(COMPONENTS)/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf52832_xxaa.ld
+
 # More linker scripts at: C:\Users\georg\sdks\nRF5_SDK_13.1.0_7ca7556\components\toolchain\gcc
-# The one I probably need: C:\Users\georg\sdks\nRF5_SDK_13.1.0_7ca7556\components\softdevice\s132\toolchain\armgcc
+# $(SDK_BASE)/ble_mesh_v0.9.1-Alpha/lib/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf52832_xxaa.ld
 
 # assembly files common to all targets
 ASM_SOURCE_FILES  += $(COMPONENTS)/toolchain/gcc/gcc_startup_nrf52.S
@@ -116,6 +117,8 @@ ASMFLAGS += -D NRF52
 ASMFLAGS += -D S132
 
 endif # SOC_FAMILY
+
+# TODO: Add nRF51 build for SD130
 
 TEMPLATE_PATH := $(COMPONENTS)/toolchain/gcc
 RBC_MESH      := rbc_mesh

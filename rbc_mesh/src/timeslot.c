@@ -176,7 +176,7 @@ static void timeslot_end(void)
     m_end_timer_triggered = false;
     CLEAR_PIN(PIN_IN_TS);
     CLEAR_PIN(PIN_IN_CB);
-
+    
 #ifdef NRF52
     NRF_TIMER0->TASKS_STOP = 0;
     NRF_TIMER0->TASKS_SHUTDOWN = 1;
@@ -201,7 +201,6 @@ static void timeslot_end(void)
 */
 void timeslot_sd_event_handler(uint32_t evt)
 {
-
     switch (evt)
     {
         case NRF_EVT_RADIO_SESSION_IDLE:
@@ -329,13 +328,13 @@ static nrf_radio_signal_callback_return_param_t* radio_signal_callback(uint8_t s
                     ts_extend(m_negotiate_timeslot_length);
                 }
             }
-            // else
-            // {
-            //     if (m_timeslot_length + m_negotiate_timeslot_length < TIMESLOT_MAX_LENGTH_US)
-            //     {
-            //         ts_extend(m_negotiate_timeslot_length);
-            //     }
-            // }
+            else
+            {
+                if (m_timeslot_length + m_negotiate_timeslot_length < TIMESLOT_MAX_LENGTH_US)
+                {
+                    ts_extend(m_negotiate_timeslot_length);
+                }
+            }
 
             break;
 
@@ -529,3 +528,4 @@ bool timeslot_is_in_ts(void)
 {
     return m_is_in_timeslot;
 }
+

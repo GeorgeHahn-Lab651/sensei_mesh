@@ -48,8 +48,7 @@ typedef enum
 {
     SERIAL_STATE_IDLE,
     SERIAL_STATE_WAIT_FOR_QUEUE,
-    SERIAL_STATE_TRANSMIT,
-    SERIAL_STATE_DISABLED
+    SERIAL_STATE_TRANSMIT
 } serial_state_t;
 /*****************************************************************************
 * Static globals
@@ -217,21 +216,16 @@ void serial_handler_init(void)
 
     /* setup hw */
     nrf_gpio_cfg_input(RX_PIN_NUMBER, NRF_GPIO_PIN_PULLUP);
-    NRF_GPIO->OUTSET = 1 << TX_PIN_NUMBER;
+    NRF_GPIO->OUTSET = (1 << RTS_PIN_NUMBER) | (1 << TX_PIN_NUMBER);
+    nrf_gpio_cfg_output(RTS_PIN_NUMBER);
+    nrf_gpio_cfg_input(CTS_PIN_NUMBER, NRF_GPIO_PIN_PULLUP);
     nrf_gpio_cfg_output(TX_PIN_NUMBER);
 
     NRF_UART0->PSELTXD       = TX_PIN_NUMBER;
     NRF_UART0->PSELRXD       = RX_PIN_NUMBER;
-#if (HWFC == true)
-    NRF_GPIO->OUTSET = 1 << RTS_PIN_NUMBER;
-    nrf_gpio_cfg_output(RTS_PIN_NUMBER);
-    nrf_gpio_cfg_input(CTS_PIN_NUMBER, NRF_GPIO_PIN_PULLUP);
     NRF_UART0->PSELCTS       = CTS_PIN_NUMBER;
     NRF_UART0->PSELRTS       = RTS_PIN_NUMBER;
     NRF_UART0->CONFIG        = (UART_CONFIG_HWFC_Enabled << UART_CONFIG_HWFC_Pos);
-#else
-    NRF_UART0->CONFIG        = (UART_CONFIG_HWFC_Disabled << UART_CONFIG_HWFC_Pos);
-#endif
     NRF_UART0->BAUDRATE      = (UART_BAUDRATE_BAUDRATE_Baud115200 << UART_BAUDRATE_BAUDRATE_Pos);
     NRF_UART0->ENABLE        = (UART_ENABLE_ENABLE_Enabled << UART_ENABLE_ENABLE_Pos);
     NRF_UART0->INTENSET      = (UART_INTENSET_RXDRDY_Msk |
@@ -242,41 +236,6 @@ void serial_handler_init(void)
     NRF_UART0->TASKS_STARTRX = 1;
     NVIC_SetPriority(UART0_IRQn, 3);
     NVIC_EnableIRQ(UART0_IRQn);
-}
-
-void serial_handler_stop(void)
-{
-  NRF_UART0->EVENTS_RXTO = 0;
-
-  NRF_UART0->TASKS_STOPTX = 1;
-  NRF_UART0->TASKS_STOPRX = 1;
-
-  // wait for receiver timeout
-  while (! NRF_UART0->EVENTS_RXTO)
-    ;
-
-  NRF_UART0->ENABLE = (UART_ENABLE_ENABLE_Disabled << UART_ENABLE_ENABLE_Pos);
-
-  // Disable UART interrupt in NVIC
-  NVIC_DisableIRQ(UART0_IRQn);
-
-  // Disconnect high drive tx pin
-  int tx_pin = NRF_UART0->PSELTXD;
-  NRF_GPIO->PIN_CNF[tx_pin] = (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos)
-                            | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos)
-                            | (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos)
-                            | (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-                            | (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos);
-
-  // Disconnect high drive rts pin
-  int rts_pin = NRF_UART0->PSELRTS;
-  NRF_GPIO->PIN_CNF[rts_pin] = (GPIO_PIN_CNF_SENSE_Disabled << GPIO_PIN_CNF_SENSE_Pos)
-                             | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos)
-                             | (GPIO_PIN_CNF_PULL_Pullup << GPIO_PIN_CNF_PULL_Pos)
-                             | (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-                             | (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos);
-
-  m_serial_state = SERIAL_STATE_DISABLED;
 }
 
 uint32_t serial_handler_credit_available(void)
@@ -299,9 +258,6 @@ void serial_wait_for_completion(void)
 
 bool serial_handler_event_send(serial_evt_t* evt)
 {
-  if (m_serial_state == SERIAL_STATE_DISABLED) {
-      return false;
-  }
     if (fifo_is_full(&m_tx_fifo))
     {
         return false;
@@ -322,9 +278,6 @@ bool serial_handler_event_send(serial_evt_t* evt)
 
 bool serial_handler_command_get(serial_cmd_t* cmd)
 {
-    if (m_serial_state == SERIAL_STATE_DISABLED) {
-        return false;
-    }
     serial_data_t temp;
     if (fifo_pop(&m_rx_fifo, &temp) != NRF_SUCCESS)
     {
@@ -342,3 +295,4 @@ bool serial_handler_command_get(serial_cmd_t* cmd)
     }
     return true;
 }
+

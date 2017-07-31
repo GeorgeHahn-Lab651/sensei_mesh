@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "bsp.h": "c",
+        "heartbeat.h": "c",
+        "mesh_control.h": "c",
+        "toolchain.h": "c",
+        "handles.h": "c",
+        "scheduler.h": "c",
+        "ble_gap.h": "c",
+        "ble_gattc.h": "c",
+        "ble_gatts.h": "c"
+    }
+}

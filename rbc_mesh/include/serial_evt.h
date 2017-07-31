@@ -37,8 +37,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "dfu_types_mesh.h"
 
 
-#define APP_EVENT_DATA_SIZE (29)
-
 typedef __packed_armcc enum
 {
     SERIAL_EVT_OPCODE_DEVICE_STARTED        = 0x81,
@@ -48,8 +46,7 @@ typedef __packed_armcc enum
     SERIAL_EVT_OPCODE_EVENT_UPDATE          = 0xB4,
     SERIAL_EVT_OPCODE_EVENT_CONFLICTING     = 0xB5,
     SERIAL_EVT_OPCODE_EVENT_TX              = 0xB6,
-    SERIAL_EVT_OPCODE_DFU                   = 0x78,
-    SERIAL_EVT_OPCODE_APP_EVT               = 0x60
+    SERIAL_EVT_OPCODE_DFU                   = 0x78
 } __packed_gcc serial_evt_opcode_t;
 
 
@@ -102,12 +99,6 @@ typedef __packed_armcc struct
     uint16_t packet_type;
 } __packed_gcc serial_evt_cmd_rsp_params_dfu_t;
 
-typedef __packed_armcc struct
-{
-    uint8_t data[RBC_MESH_VALUE_MAX_LEN];
-} __packed_gcc serial_evt_cmd_rsp_params_app_cmd_t;
-
-
 /****** EVT PARAMS ******/
 typedef __packed_armcc struct
 {
@@ -127,56 +118,46 @@ typedef __packed_armcc struct
         serial_evt_cmd_rsp_params_int_min_t int_min;
         serial_evt_cmd_rsp_params_val_get_t val_get;
         serial_evt_cmd_rsp_params_dfu_t dfu;
-        serial_evt_cmd_rsp_params_app_cmd_t app_cmd;
-    } __packed_gcc response;
+    } __packed_gcc response;        
 } __packed_gcc serial_evt_params_cmd_rsp_t;
 
 typedef __packed_armcc struct
 {
     rbc_mesh_value_handle_t handle;
-    uint16_t version_delta;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_new_t;
 
 typedef __packed_armcc struct
 {
     rbc_mesh_value_handle_t handle;
-    uint16_t version_delta;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_update_t;
 
-typedef __packed_armcc struct
+typedef __packed_armcc struct 
 {
     rbc_mesh_value_handle_t handle;
-    uint16_t version_delta;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_conflicting_t;
 
-typedef __packed_armcc struct
+typedef __packed_armcc struct 
 {
     rbc_mesh_value_handle_t handle;
-    uint16_t version_delta;
     uint8_t data[RBC_MESH_VALUE_MAX_LEN];
 } __packed_gcc serial_evt_params_event_tx_t;
 
-typedef __packed_armcc struct
+typedef __packed_armcc struct 
 {
     operating_mode_t operating_mode;
     uint8_t hw_error;
     uint8_t data_credit_available;
 } __packed_gcc serial_evt_params_event_device_started_t;
 
-typedef __packed_armcc struct
+typedef __packed_armcc struct 
 {
     dfu_packet_t packet;
 } __packed_gcc serial_evt_params_dfu_t;
 
-typedef __packed_armcc struct
-{
-    uint8_t app_event_data[APP_EVENT_DATA_SIZE];
-} __packed_gcc serial_evt_params_app_evt_t;
-
-typedef __packed_armcc struct
+typedef __packed_armcc struct 
 {
     uint8_t length;
     uint8_t opcode;
@@ -190,7 +171,6 @@ typedef __packed_armcc struct
         serial_evt_params_event_tx_t                event_tx;
         serial_evt_params_event_device_started_t    device_started;
         serial_evt_params_dfu_t                     dfu;
-        serial_evt_params_app_evt_t                 app_evt;
 	} __packed_gcc params;
 } __packed_gcc serial_evt_t;
 

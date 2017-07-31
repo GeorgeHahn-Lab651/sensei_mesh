@@ -54,28 +54,19 @@
 /* event push isn't present in the API header file. */
 extern uint32_t rbc_mesh_event_push(rbc_mesh_event_t* p_evt);
 
-#if (NORDIC_SDK_VERSION >= 11)
+#if (NORDIC_SDK_VERSION >= 11) 
 const nrf_clock_lf_cfg_t defaultClockSource = {.source        = NRF_CLOCK_LF_SRC_RC,   \
                                                .rc_ctiv       = 16,                    \
                                                .rc_temp_ctiv  = 2,                     \
                                                .xtal_accuracy = 0};
 #endif
 
-static app_cmd_handler_t app_cmd_handler_cb = NULL;
-
-
 /*****************************************************************************
  * Static functions
  *****************************************************************************/
 
-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
-
-
-
 static aci_status_code_t error_code_translate(uint32_t nrf_error_code)
 {
-    BUILD_BUG_ON(sizeof(serial_cmd_t) != 31);
-
     switch (nrf_error_code)
     {
         case NRF_SUCCESS:
@@ -143,7 +134,7 @@ static void serial_command_handler(serial_cmd_t* p_serial_cmd)
 #ifdef NRF52
             sd_power_gpregret_set(0, RBC_MESH_GPREGRET_CODE_FORCED_REBOOT);
 #endif
-            sd_nvic_SystemReset();
+            sd_nvic_SystemReset(); 
 #else
             NRF_POWER->RESETREAS = 0xFFFFFFFF; /* erase reset-reason to avoid wrongful state-readout on reboot */
             NRF_POWER->GPREGRET = RBC_MESH_GPREGRET_CODE_FORCED_REBOOT;
@@ -529,28 +520,6 @@ static void serial_command_handler(serial_cmd_t* p_serial_cmd)
                 serial_handler_event_send(&serial_evt);
             }
             break;
-          case SERIAL_CMD_OPCODE_APP_CMD:
-          {
-              serial_evt.opcode = SERIAL_EVT_OPCODE_CMD_RSP;
-              serial_evt.params.cmd_rsp.command_opcode = p_serial_cmd->opcode;
-
-              if (app_cmd_handler_cb) {
-                error_code = app_cmd_handler_cb(
-                  p_serial_cmd->params.app_cmd.data,
-                  p_serial_cmd->length - SERIAL_PACKET_OVERHEAD,
-                  serial_evt.params.cmd_rsp.response.app_cmd.data,
-                  &serial_evt.length);
-              } else {
-                serial_evt.length = 3;
-                error_code = NRF_ERROR_NOT_SUPPORTED;
-              }
-
-              serial_evt.length += 1 + 1 + 1; /* opcode + command + status */
-              serial_evt.params.cmd_rsp.status = error_code_translate(error_code);
-
-              serial_handler_event_send(&serial_evt);
-            }
-            break;
 
         default:
             __LOG("Unknown event!\n");
@@ -576,11 +545,6 @@ void mesh_aci_init(void)
 #endif
     serial_handler_init();
 }
-
-void mesh_aci_app_cmd_handler_set(app_cmd_handler_t app_cmd_handler) {
-  app_cmd_handler_cb = app_cmd_handler;
-}
-
 
 uint32_t mesh_aci_start(void)
 {
@@ -645,13 +609,13 @@ void mesh_aci_rbc_event_handler(rbc_mesh_event_t* evt)
             break;
     }
 
-    /* serial overhead: opcode + handle + version = 5 */
-    serial_evt.length = 5 + evt->params.rx.data_len;
+    /* serial overhead: opcode + handle = 3 */
+    serial_evt.length = 3 + evt->params.rx.data_len;
 
     /* all event parameter types are the same, just use event_update for all */
     serial_evt.params.event_update.handle = evt->params.rx.value_handle;
-    serial_evt.params.event_update.version_delta = evt->params.rx.version_delta;
     memcpy(serial_evt.params.event_update.data, evt->params.rx.p_data, evt->params.rx.data_len);
 
     serial_handler_event_send(&serial_evt);
 }
+
