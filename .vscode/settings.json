@@ -8,6 +8,26 @@
         "scheduler.h": "c",
         "ble_gap.h": "c",
         "ble_gattc.h": "c",
-        "ble_gatts.h": "c"
+        "ble_gatts.h": "c",
+        "boards.h": "c",
+        "nrf_gpio.h": "c",
+        "nrf.h": "c",
+        "nrf52.h": "c",
+        "mesh_aci.h": "c",
+        "rbc_mesh.h": "c",
+        "serial_command.h": "c",
+        "serial_evt.h": "c",
+        "radio_control.h": "c",
+        "nrf_sdm.h": "c",
+        "nrf_error.h": "c",
+        "nrf_soc.h": "c",
+        "config.h": "c",
+        "stdbool.h": "c",
+        "battery.h": "c",
+        "nrf_adc.h": "c",
+        "nrf_saadc.h": "c",
+        "nrf_drv_adc.h": "c",
+        "cdefs.h": "c",
+        "shoe_sensor.h": "c"
     }
 }

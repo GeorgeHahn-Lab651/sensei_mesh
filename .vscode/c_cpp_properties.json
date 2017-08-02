@@ -43,30 +43,32 @@
             "includePath": [
                 "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/arm-none-eabi/include",
                 "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/lib/gcc/arm-none-eabi/6.3.1/include",
-                "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/config/",
-                "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/components/toolchain/",
-                "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/components/toolchain/cmsis/include",
-                "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/components/softdevice/s132/headers",
-                "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/components/softdevice/s132/headers/nrf52",
+                "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/config/",
+                "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/components/toolchain/",
+                "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/components/toolchain/cmsis/include",
+                "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/components/softdevice/s132/headers",
+                "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/components/softdevice/s132/headers/nrf52",
                 "${workspaceRoot}",
+                "${workspaceRoot}/config",
                 "${workspaceRoot}/bsp",
                 "${workspaceRoot}/arduino_core"
             ],
             "defines": [
-                "_DEBUG",
-                "UNICODE"
+                "S132",
+                "NRF52"
             ],
             "intelliSenseMode": "msvc-x64",
             "browse": {
                 "path": [
                     "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/arm-none-eabi/include",
-                "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/lib/gcc/arm-none-eabi/6.3.1/include",
-                    "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/config/",
-                    "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/components/toolchain/",
-                    "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/components/toolchain/cmsis/include",
-                    "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/components/softdevice/s132/headers",
-                    "C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556/components/softdevice/s132/headers/nrf52",
+                    "C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update/lib/gcc/arm-none-eabi/6.3.1/include",
+                    "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/config/",
+                    "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/components/toolchain/",
+                    "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/components/toolchain/cmsis/include",
+                    "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/components/softdevice/s132/headers",
+                    "C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad/components/softdevice/s132/headers/nrf52",
                     "${workspaceRoot}",
+                    "${workspaceRoot}/config",
                     "${workspaceRoot}/bsp",
                     "${workspaceRoot}/arduino_core"
                 ],

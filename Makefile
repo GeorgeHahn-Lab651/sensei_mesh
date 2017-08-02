@@ -14,7 +14,9 @@ SOC_FAMILY           := nRF52
 USE_DFU              ?= "no"
 
 NRF51_SDK_BASE      := C:/Users/georg/sdks/nRF51_SDK_8.1.0_b6ed55f
-NRF52_SDK_BASE      := C:/Users/georg/sdks/nRF5_SDK_13.1.0_7ca7556
+NRF51_SDK_VERSION   := 8
+NRF52_SDK_BASE      := C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad
+NRF52_SDK_VERSION   := 12
 SIMBLEE_BASE        := C:/Users/georg/sdks/Simblee_248
 
 GNU_INSTALL_ROOT := C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update
@@ -36,6 +38,8 @@ LINKER_SCRIPT := $(SIMBLEE_BASE)/variants/Simblee/linker_scripts/gcc/Simblee.ld
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/libraries/SimbleeBLE/SimbleeBLE.cpp
 CXX_SOURCE_FILES += $(SIMBLEE_BASE)/variants/Simblee/variant.cpp
 
+C_SOURCE_FILES += $(COMPONENTS)/toolchain/system_nrf51.c
+
 INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
 INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee
 INC_PATHS += -I$(SIMBLEE_BASE)/variants/Simblee
@@ -44,6 +48,14 @@ CXX_INC_PATHS += -I$(SIMBLEE_BASE)/variants/Simblee
 CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee
 CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee/include
 CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/CMSIS/CMSIS/Include
+
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/twi_master/incubated/
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/twi_master/incubated/twi_hw_master.c
+
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/adc
+INC_PATHS += -I$(COMPONENTS)/libraries/pstorage
+
+INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
 
 LDFLAGS += -L$(SIMBLEE_BASE)/variants/Simblee
 LIBS += -lSimbleeSystem -lSimblee -lSimbleeBLE -lSimbleeGZLL -lSimbleeForMobile -lSimbleeCOM
@@ -84,13 +96,15 @@ LINKER_SCRIPT := $(COMPONENTS)/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf5
 # More linker scripts at: C:\Users\georg\sdks\nRF5_SDK_13.1.0_7ca7556\components\toolchain\gcc
 # $(SDK_BASE)/ble_mesh_v0.9.1-Alpha/lib/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf52832_xxaa.ld
 
-# assembly files common to all targets
 ASM_SOURCE_FILES  += $(COMPONENTS)/toolchain/gcc/gcc_startup_nrf52.S
+
+C_SOURCE_FILES += $(COMPONENTS)/toolchain/system_nrf52.c
 
 #INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
 #CXX_INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
 
-INC_PATHS += -I$(SDK_BASE)/config/
+INC_PATHS += -Iconfig/
+CXX_INC_PATHS += -Iconfig/
 
 INC_PATHS += -I$(COMPONENTS)/toolchain/cmsis/include
 INC_PATHS += -I$(COMPONENTS)/toolchain/
@@ -103,18 +117,43 @@ INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers/nrf52
 CXX_INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers
 CXX_INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers/nrf52
 
+# SDK11 libs
+INC_PATHS += -I$(COMPONENTS)/libraries/log
+INC_PATHS += -I$(COMPONENTS)/libraries/log/src
+INC_PATHS += -I$(COMPONENTS)/libraries/timer
+INC_PATHS += -I$(COMPONENTS)/libraries/fstorage
+INC_PATHS += -I$(COMPONENTS)/libraries/experimental_section_vars
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/saadc
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/ppi
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/timer
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/twi_master/deprecated/
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/twi_master/deprecated/twi_hw_master.c
+
+# TODO: Consider moving config from fstorage to fds
+INC_PATHS += -I$(COMPONENTS)/libraries/fds
+
 CFLAGS += -D NRF52
 CFLAGS += -D S132
+CFLAGS += -D NRF52832
+CFLAGS += -D NRF52832_XXAA # Will make SDK13 port easier
+CFLAGS += -D NORDIC_SDK_VERSION=$(NRF52_SDK_VERSION)
+CFLAGS += -D RAM_R1_BASE=0x20003000
+CFLAGS += -DNRF_SD_BLE_API_VERSION=3
+CFLAGS += -DARM_MATH_CM4
+
 CFLAGS += -mcpu=cortex-m4
-CFLAGS += -mfloat-abi=hard
+CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 CXXFLAGS += -MMD -mcpu=cortex-m4 -DF_CPU=64000000
 CXXFLAGS += -DARDUINO=10801 #???
 
 LDFLAGS += -mcpu=cortex-m4
+LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 ASMFLAGS += -D NRF52
 ASMFLAGS += -D S132
+ASMFLAGS += -D NRF52832
+ASMFLAGS += -D NRF52832_XXAA
 
 endif # SOC_FAMILY
 
@@ -220,9 +259,7 @@ C_SOURCE_FILES += $(RBC_MESH)/src/mesh_packet.c
 C_SOURCE_FILES += $(RBC_MESH)/src/rand.c
 
 C_SOURCE_FILES += $(COMPONENTS)/ble/common/ble_advdata.c
-C_SOURCE_FILES += $(COMPONENTS)/toolchain/system_nrf51.c
 C_SOURCE_FILES += $(COMPONENTS)/softdevice/common/softdevice_handler/softdevice_handler.c
-C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/twi_master/incubated/twi_hw_master.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/gpiote/nrf_drv_gpiote.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/common/nrf_drv_common.c
 
@@ -240,7 +277,6 @@ INC_PATHS += -I$(RBC_MESH)/include
 INC_PATHS += -Ibsp
 INC_PATHS += -I../../../RTT
 
-INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
 INC_PATHS += -I$(COMPONENTS)/softdevice/common/softdevice_handler
 INC_PATHS += -I$(COMPONENTS)/toolchain/gcc
 INC_PATHS += -I$(COMPONENTS)/libraries/util
@@ -248,17 +284,13 @@ INC_PATHS += -I$(COMPONENTS)/libraries/timer
 INC_PATHS += -I$(COMPONENTS)/ble/common
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/common
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/pstorage
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/twi_master/incubated/
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/gpiote
-
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/spi_slave
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/delay
 INC_PATHS += -I$(COMPONENTS)/toolchain/gcc
 INC_PATHS += -I$(COMPONENTS)/toolchain
 INC_PATHS += -I$(COMPONENTS)/device
 INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/spi_slave
-
 
 OBJECT_DIRECTORY = _build
 LISTING_DIRECTORY = $(OBJECT_DIRECTORY)
@@ -280,7 +312,7 @@ CFLAGS += -D BLE_STACK_SUPPORT_REQD
 CFLAGS += -D SOFTDEVICE_PRESENT
 CFLAGS += -D $(TARGET_BOARD)
 CFLAGS += -mthumb -mabi=aapcs --std=gnu11
-CFLAGS += -Wall -Werror
+CFLAGS += -Wall -Werror -Wno-unused-function
 CFLAGS += -Wa,-adhln
 CFLAGS += -ffunction-sections
 CFLAGS += -fdata-sections -fno-strict-aliasing
@@ -318,7 +350,7 @@ CXX_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(CXX_SOURCE_FILE_NAMES:.cpp=.o)
 
 ASM_SOURCE_FILE_NAMES = $(notdir $(ASM_SOURCE_FILES))
 ASM_PATHS = $(call remduplicates, $(dir $(ASM_SOURCE_FILES) ))
-ASM_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(ASM_SOURCE_FILE_NAMES:.s=.o) )
+ASM_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(ASM_SOURCE_FILE_NAMES:.S=.o) )
 
 TOOLCHAIN_BASE = $(basename $(notdir $(GNU_INSTALL_ROOT)))
 
@@ -370,7 +402,7 @@ $(OBJECT_DIRECTORY)/%.o: %.cpp
 
 # Assemble files
 $(OBJECT_DIRECTORY)/%.o: %.s
-	@echo Compiling file: $(notdir $<)
+	@echo Assembling file: $(notdir $<)
 	$(NO_ECHO)$(CC) $(ASMFLAGS) $(INC_PATHS) -c -o $@ $<
 
 # Link

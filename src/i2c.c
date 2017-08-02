@@ -7,6 +7,8 @@
 #include "twi_master.h"
 #include "i2c.h"
 
+// TODO Port away from deprecated twi master library on nRF52
+
 void i2c_init() {
 	twi_master_init();
 }

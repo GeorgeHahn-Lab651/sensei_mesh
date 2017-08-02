@@ -18,6 +18,13 @@
 #define APP_TIMER_MAX_TIMERS            3
 #define APP_TIMER_OP_QUEUE_SIZE         4
 
+
+#if NORDIC_SDK_VERSION >= 11
+  #define GET_APP_TIMER(timer) { timer = app_timer_cnt_get(); }
+#else
+  #define GET_APP_TIMER(timer) { app_timer_cnt_get(&timer); }
+#endif
+
 static int32_t m_boot_time;
 static int32_t m_last_sync;
 static int32_t m_current_time;
@@ -55,7 +62,7 @@ static void periodic_timer_cb(void * p_context)
 
   if (m_current_time % mesh_control_get_wake_interval() == 0) {
     SET_LED(LED_GREEN);
-    app_timer_cnt_get(&m_clock_second_start_counter_value);
+    GET_APP_TIMER(m_clock_second_start_counter_value);
     m_scheduler_state = SCHEDULER_STATE_BEFORE_HB;
     rbc_mesh_start();
 
@@ -95,7 +102,13 @@ static void do_reporting() {
 
 static void delay_to_sleep() {
   uint32_t current_counter;
-  app_timer_cnt_get(&current_counter);
+  
+  #if NORDIC_SDK_VERSION >= 11
+  GET_APP_TIMER(current_counter);
+  #else
+  APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, false);
+  #endif
+
   uint32_t elapsed_ticks_since_second_start = current_counter - m_clock_second_start_counter_value;
   int32_t delay_ticks = MS_TO_TICKS(TOTAL_RADIO_WINDOW_MS) - elapsed_ticks_since_second_start;
   if (delay_ticks > 5) {
@@ -162,7 +175,13 @@ void scheduler_init(bool sleep_enabled) {
   m_sleep_enabled = sleep_enabled;
   rand_prng_seed(&m_rand);
   m_scheduler_state = SCHEDULER_STATE_STOPPED;
+
+  #if NORDIC_SDK_VERSION >= 11
+  APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, false);
+  #else
   APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_MAX_TIMERS, APP_TIMER_OP_QUEUE_SIZE, false);
+  #endif
+
   app_timer_create(&m_periodic_timer_ID, APP_TIMER_MODE_REPEATED, periodic_timer_cb);
   app_timer_create(&m_clock_sync_timer_ID, APP_TIMER_MODE_SINGLE_SHOT, clock_sync_cb);
   app_timer_create(&m_offset_timer_ID, APP_TIMER_MODE_SINGLE_SHOT, offset_timer_cb);
@@ -194,7 +213,7 @@ void set_clock_time(int32_t epoch, uint16_t ms, clock_source_t clock_source, int
 
 int32_t get_clock_ms() {
   uint32_t current_counter;
-  app_timer_cnt_get(&current_counter);
+  GET_APP_TIMER(current_counter);
   return TICKS_TO_MS(current_counter - m_clock_second_start_counter_value);
 }
 

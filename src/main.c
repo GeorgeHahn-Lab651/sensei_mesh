@@ -24,10 +24,25 @@
 #include <string.h>
 #include <stdio.h>
 
+#if NORDIC_SDK_VERSION >= 11
+#include "nrf_nvic.h"
+#endif
 
 #define MESH_ACCESS_ADDR        (0xA555410C)
 #define MESH_INTERVAL_MIN_MS    (100)
-#define MESH_CLOCK_SRC          (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
+
+#if NORDIC_SDK_VERSION >= 11
+nrf_nvic_state_t nrf_nvic_state = {0};
+static nrf_clock_lf_cfg_t m_clock_cfg = 
+{
+    .source = NRF_CLOCK_LF_SRC_XTAL,    
+    .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_75_PPM
+};
+
+#define MESH_CLOCK_SOURCE       (m_clock_cfg)    /**< Clock source used by the Softdevice. For calibrating timeslot time. */
+#else
+#define MESH_CLOCK_SOURCE       (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)    /**< Clock source used by the Softdevice. For calibrating timeslot time. */
+#endif
 
 /** @brief General error handler. */
 static inline void error_loop(void)
@@ -130,7 +145,7 @@ int main(void)
 #endif
 
   /* Enable Softdevice (including sd_ble before framework */
-  SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SRC, NULL);
+  SOFTDEVICE_HANDLER_INIT(&MESH_CLOCK_SOURCE, NULL);
   softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
 
   //clock_initialization();
@@ -158,7 +173,7 @@ int main(void)
   init_params.access_addr = MESH_ACCESS_ADDR;
   init_params.interval_min_ms = MESH_INTERVAL_MIN_MS;
   init_params.channel = DEFAULT_MESH_CHANNEL;
-  init_params.lfclksrc = MESH_CLOCK_SRC;
+  init_params.lfclksrc = MESH_CLOCK_SOURCE;
   init_params.tx_power = RBC_MESH_TXPOWER_0dBm;
 
   uint32_t error_code;
