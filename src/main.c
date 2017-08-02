@@ -55,6 +55,16 @@ static inline void error_loop(void)
   }
 }
 
+void app_error_handler_bare(uint32_t error_code)
+{
+    __disable_irq();
+#ifdef DEBUG_LEDS
+  TOGGLE_LED(LED_RED);
+#endif
+    __BKPT(0);
+    while (1);
+}
+
 /**
 * @brief Softdevice crash handler, never returns
 *
