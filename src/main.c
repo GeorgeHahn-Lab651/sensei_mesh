@@ -55,16 +55,6 @@ static inline void error_loop(void)
   }
 }
 
-void app_error_handler_bare(uint32_t error_code)
-{
-    __disable_irq();
-#ifdef DEBUG_LEDS
-  TOGGLE_LED(LED_RED);
-#endif
-    __BKPT(0);
-    while (1);
-}
-
 /**
 * @brief Softdevice crash handler, never returns
 *
@@ -115,7 +105,7 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t* p_evt)
 /* dispatch system events to interested modules. */
 static void sys_evt_dispatch(uint32_t sys_evt)
 {
-    pstorage_sys_event_handler(sys_evt);
+    //pstorage_sys_event_handler(sys_evt);
     //ble_advertising_on_sys_evt(sys_evt);
 }
 

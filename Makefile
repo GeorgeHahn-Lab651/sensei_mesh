@@ -262,6 +262,10 @@ C_SOURCE_FILES += $(COMPONENTS)/ble/common/ble_advdata.c
 C_SOURCE_FILES += $(COMPONENTS)/softdevice/common/softdevice_handler/softdevice_handler.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/gpiote/nrf_drv_gpiote.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/common/nrf_drv_common.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_util_platform.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error_weak.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/util/sdk_errors.c
 
 vpath %.c $(C_PATHS)
 
