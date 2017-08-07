@@ -4,20 +4,23 @@
 # Selectable build options
 #------------------------------------------------------------------------------
 
+# TODO: Move these into make targets
 #TARGET_BOARD         ?= BOARD_RFD77201
 TARGET_BOARD         ?= BOARD_SHOE_SENSORv2
-
-#SOC_FAMILY           := Simblee
-#SOC_FAMILY           := nRF51
 SOC_FAMILY           := nRF52
 
 USE_DFU              ?= "no"
 
-NRF51_SDK_BASE      := C:/Users/georg/sdks/nRF51_SDK_8.1.0_b6ed55f
-NRF51_SDK_VERSION   := 8
-NRF52_SDK_BASE      := C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad
-NRF52_SDK_VERSION   := 12
-SIMBLEE_BASE        := C:/Users/georg/sdks/Simblee_248
+# TODO: Pretty sure we can run everything on SDK 12. Try it!
+NRF51_SDK_BASE       := C:/Users/georg/sdks/nRF51_SDK_8.1.0_b6ed55f
+NRF51_SDK_VERSION    := 8
+NRF52_SDK_BASE       := C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad
+NRF52_SDK_VERSION    := 12
+SIMBLEE_BASE         := C:/Users/georg/sdks/Simblee_248
+
+NRF51_SOFTDEVICE_HEX := C:\Users\georg\sdks\nRF51_SDK_8.1.0_b6ed55f\components\softdevice\s130\hex\s130_softdevice.hex
+#NRF51_SOFTDEVICE_HEX := C:\Users\georg\sdks\nRF5_SDK_12.3.0_d7731ad\components\softdevice\s130\hex\s130_nrf51_2.0.1_softdevice.hex
+NRF52_SOFTDEVICE_HEX := C:\Users\georg\sdks\nRF5_SDK_12.3.0_d7731ad\components\softdevice\s132\hex\s132_nrf52_3.0.0_softdevice.hex
 
 GNU_INSTALL_ROOT := C:/Program Files (x86)/GNU Tools ARM Embedded/6 2017-q2-update
 GNU_VERSION := 6.3.1
@@ -73,6 +76,9 @@ LDFLAGS += -mcpu=cortex-m0
 ASMFLAGS += -D NRF51
 ASMFLAGS += -D S110
 
+# TODO: Replace this proprietary blob with Arduino-nRF5 or remove
+ARDUINO_CORE = arduino_core/core.a
+
 # Detect OS and use correct RFD Loader
 ifeq ($(detected_OS),Windows)
     RFD_LOADER 		:= $(SIMBLEE_BASE)/RFDLoader.exe
@@ -94,6 +100,7 @@ COMPONENTS    := $(SDK_BASE)/components
 LINKER_SCRIPT := $(COMPONENTS)/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf52832_xxaa.ld
 
 # More linker scripts at: C:\Users\georg\sdks\nRF5_SDK_13.1.0_7ca7556\components\toolchain\gcc
+# This one is probably to enable mesh OTA:
 # $(SDK_BASE)/ble_mesh_v0.9.1-Alpha/lib/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf52832_xxaa.ld
 
 ASM_SOURCE_FILES  += $(COMPONENTS)/toolchain/gcc/gcc_startup_nrf52.S
@@ -165,17 +172,19 @@ RBC_MESH      := rbc_mesh
 
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
 	SERIAL_STRING := "_serial"
-else
-	SERIAL_STRING := ""
 endif
 
 ifeq ($(USE_DFU), "yes")
 	DFU_STRING="_dfu"
-else
-	DFU_STRING=""
 endif
 
-OUTPUT_NAME := rbc_mesh$(SERIAL_STRING)$(DFU_STRING)_$(TARGET_BOARD)
+ifeq ($(MAKECMDGOALS),debug)
+  BUILD_TYPE := debug
+else
+  BUILD_TYPE := release
+endif
+
+OUTPUT_NAME := rbc_mesh$(SERIAL_STRING)$(DFU_STRING)_$(TARGET_BOARD)_$(SOC_FAMILY)_$(BUILD_TYPE)
 
 #------------------------------------------------------------------------------
 # Proceed cautiously beyond this point.  Little should change.
@@ -192,12 +201,6 @@ ifeq ("$(VERBOSE)","1")
   NO_ECHO :=
 else
   NO_ECHO := @
-endif
-
-ifeq ($(MAKECMDGOALS),debug)
-  BUILD_TYPE := debug
-else
-  BUILD_TYPE := release
 endif
 
 # Toolchain commands
@@ -268,10 +271,6 @@ C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error_weak.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/sdk_errors.c
 
 vpath %.c $(C_PATHS)
-
-# TODO: Replace this proprietary blob with Arduino-nRF5 or remove
-ARDUINO_CORE = arduino_core/core.a
-
 
 # includes common to all targets
 
@@ -366,11 +365,7 @@ vpath %.s $(ASM_PATHS)
 
 OBJECTS = $(CXX_OBJECTS) $(C_OBJECTS) $(ASM_OBJECTS) $(ARDUINO_CORE)
 
-all: $(BUILD_DIRECTORIES) $(OBJECTS)
-	@echo Linking target: $(OUTPUT_NAME).elf
-	$(NO_ECHO)$(CC) $(LDFLAGS) $(OBJECTS) $(LIBS) -o $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf
-	$(NO_ECHO)$(MAKE) -f $(MAKEFILE_NAME) -C $(MAKEFILE_DIR) -e finalize
-
+all: $(BUILD_DIRECTORIES) $(OBJECTS) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf echosize
 	@echo "*****************************************************"
 	@echo "build project: $(OUTPUT_NAME)"
 	@echo "build type:    $(BUILD_TYPE)"
@@ -424,34 +419,53 @@ $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex: $(OUTPUT_BINARY_DIRECTORY)/$(OUTP
 	@echo Preparing: $(OUTPUT_NAME).hex
 	$(NO_ECHO)$(OBJCOPY) -O ihex $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 
-finalize: genbin genhex echosize
+# Merge SoftDevice with app hex
+$(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
+	@echo Preparing $(OUTPUT_NAME)_merged.hex
+	$(NO_ECHO)mergehex -m $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex $(NRF52_SOFTDEVICE_HEX) -o $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex
 
-genbin:
-	@echo Preparing: $(OUTPUT_NAME).bin
-	$(NO_ECHO)$(OBJCOPY) -O binary $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).bin
 
-# Create binary .hex file from the .elf file
-genhex:
-	@echo Preparing: $(OUTPUT_NAME).hex
-	$(NO_ECHO)$(OBJCOPY) -O ihex $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
+# Phonies:
 
-echosize:
+.PHONY: echosize
+echosize: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf
 	-@echo ""
 	$(NO_ECHO)$(SIZE) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf
 	-@echo ""
 
-.PHONY: install
-install: all
+# Flash Simblee devices
+.PHONY: install_simblee
+install_simblee: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 	@echo Installing: $(OUTPUT_NAME).hex
 	# TODO: handle nRF52
 	$(NO_ECHO)$(RFD_LOADER) $(SERIAL_PORT) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 
+# Flash nRF52 devices
+.PHONY: install_nordic
+install_nordic: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex
+	@echo Installing: $(OUTPUT_NAME)_merged.hex
+	$(NO_ECHO)nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex --verify --chiperase -f NRF52
+	$(NO_ECHO)nrfjprog -r -f NRF52
+
+# Clean
+.PHONY: clean
 clean:
 	$(RM) $(BUILD_DIRECTORIES)
 
+.PHONY: cleanobj
 cleanobj:
 	$(RM) $(BUILD_DIRECTORIES)/*.o
 
-.PHONY: program
-program: all install
+# Set device configuration via serial
+.PHONY: configure
+configure:
 	./pyaci/configure_sensor.py $(SENSOR_CONFIGURATION_OPTIONS) -d $(SERIAL_PORT) $(SENSOR_ID)
+
+# High level commands
+.PHONY: nrf51
+nrf51: all install_simblee configure
+
+.PHONY: nrf52
+nrf52: all install_nordic configure
+
+.DEFAULT_GOAL:=nrf52
