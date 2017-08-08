@@ -1,3 +1,5 @@
+#define NRF_LOG_MODULE_NAME "main.c"
+
 #include "nrf_log.h"
 #include "nrf_log_ctrl.h"
 
@@ -25,8 +27,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define NRF_LOG_MODULE_NAME "main.c"
-
 #if NORDIC_SDK_VERSION >= 11
 #include "nrf_nvic.h"
 #endif
@@ -41,7 +41,7 @@ static nrf_clock_lf_cfg_t m_clock_cfg = {.source = NRF_CLOCK_LF_SRC_XTAL,
                                              NRF_CLOCK_LF_XTAL_ACCURACY_75_PPM};
 
 #define MESH_CLOCK_SOURCE                                                      \
-  (m_clock_cfg) /**< Clock source used by the Softdevice. For calibrating      \
+  (m_clock_cfg) /* < Clock source used by the Softdevice. For calibrating      \
                    timeslot time. */
 #else
 #define MESH_CLOCK_SOURCE                                                      \
