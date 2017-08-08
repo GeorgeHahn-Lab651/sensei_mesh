@@ -8,6 +8,7 @@
 #TARGET_BOARD         ?= BOARD_RFD77201
 TARGET_BOARD         ?= BOARD_SHOE_SENSORv2
 SOC_FAMILY           := nRF52
+#SOC_FAMILY           := Simblee
 
 USE_DFU              ?= "no"
 
