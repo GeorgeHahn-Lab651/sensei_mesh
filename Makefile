@@ -124,7 +124,7 @@ INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers/nrf52
 CXX_INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers
 CXX_INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers/nrf52
 
-# SDK11 libs
+# SDK12 libs
 INC_PATHS += -I$(COMPONENTS)/libraries/log
 INC_PATHS += -I$(COMPONENTS)/libraries/log/src
 INC_PATHS += -I$(COMPONENTS)/libraries/timer
@@ -133,6 +133,7 @@ INC_PATHS += -I$(COMPONENTS)/libraries/experimental_section_vars
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/saadc
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/ppi
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/timer
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/uart
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/twi_master/deprecated/
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/twi_master/deprecated/twi_hw_master.c
 
@@ -147,6 +148,7 @@ CFLAGS += -D NORDIC_SDK_VERSION=$(NRF52_SDK_VERSION)
 CFLAGS += -D RAM_R1_BASE=0x20003000
 CFLAGS += -DNRF_SD_BLE_API_VERSION=3
 CFLAGS += -DARM_MATH_CM4
+CFLAGS += -DNRF_LOG_USES_RTT=1
 
 CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
@@ -169,10 +171,12 @@ endif # SOC_FAMILY
 TEMPLATE_PATH := $(COMPONENTS)/toolchain/gcc
 RBC_MESH      := rbc_mesh
 
-
+# TODO: This is hardcoded on - any reason to kee this flag?
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
 	SERIAL_STRING := "_serial"
+#	CFLAGS += -DRBC_MESH_SERIAL
 endif
+CFLAGS += -DRBC_MESH_SERIAL=1 -DBSP_SIMPLE
 
 ifeq ($(USE_DFU), "yes")
 	DFU_STRING="_dfu"
@@ -230,7 +234,6 @@ C_SOURCE_FILES += src/main.c src/config.c src/sensor.c src/app_cmd.c \
 	src/app_evt.c src/mesh_control.c bsp/bsp.c src/i2c.c src/jostle_detect.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
 
-CFLAGS += -DRBC_MESH_SERIAL=1 -DBSP_SIMPLE
 C_SOURCE_FILES += $(RBC_MESH)/src/serial_handler_uart.c
 C_SOURCE_FILES += $(RBC_MESH)/src/mesh_aci.c
 
@@ -261,10 +264,17 @@ C_SOURCE_FILES += $(RBC_MESH)/src/handle_storage.c
 C_SOURCE_FILES += $(RBC_MESH)/src/mesh_packet.c
 C_SOURCE_FILES += $(RBC_MESH)/src/rand.c
 
+C_SOURCE_FILES += $(SDK_BASE)/external/segger_rtt/SEGGER_RTT.c
+C_SOURCE_FILES += $(SDK_BASE)/external/segger_rtt/SEGGER_RTT_printf.c
+C_SOURCE_FILES += $(SDK_BASE)/external/segger_rtt/RTT_Syscalls_GCC.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/log/src/nrf_log_frontend.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/log/src/nrf_log_backend_serial.c
+
 C_SOURCE_FILES += $(COMPONENTS)/ble/common/ble_advdata.c
 C_SOURCE_FILES += $(COMPONENTS)/softdevice/common/softdevice_handler/softdevice_handler.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/gpiote/nrf_drv_gpiote.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/common/nrf_drv_common.c
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/uart/nrf_drv_uart.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_util_platform.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error_weak.c
@@ -278,7 +288,7 @@ INC_PATHS += -Isrc
 INC_PATHS += -I$(RBC_MESH)
 INC_PATHS += -I$(RBC_MESH)/include
 INC_PATHS += -Ibsp
-INC_PATHS += -I../../../RTT
+INC_PATHS += -I$(SDK_BASE)/external/segger_rtt
 
 INC_PATHS += -I$(COMPONENTS)/softdevice/common/softdevice_handler
 INC_PATHS += -I$(COMPONENTS)/toolchain/gcc

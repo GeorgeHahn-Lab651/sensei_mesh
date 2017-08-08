@@ -1511,7 +1511,7 @@
 // <e> UART_ENABLED - nrf_drv_uart - UART/UARTE peripheral driver
 //==========================================================
 #ifndef UART_ENABLED
-#define UART_ENABLED 0
+#define UART_ENABLED 1
 #endif
 #if  UART_ENABLED
 // <o> UART_DEFAULT_CONFIG_HWFC  - Hardware Flow Control
@@ -2113,7 +2113,7 @@
 // <e> NRF_LOG_ENABLED - nrf_log - Logging
 //==========================================================
 #ifndef NRF_LOG_ENABLED
-#define NRF_LOG_ENABLED 0
+#define NRF_LOG_ENABLED 1
 #endif
 #if  NRF_LOG_ENABLED
 // <e> NRF_LOG_USES_COLORS - If enabled then ANSI escape code for colors is prefixed to every string
@@ -2214,6 +2214,163 @@
 
 #endif //NRF_LOG_ENABLED
 // </e>
+
+// <h> nrf_log_backend - Logging sink
+
+//==========================================================
+// <o> NRF_LOG_BACKEND_MAX_STRING_LENGTH - Buffer for storing single output string 
+// <i> Logger backend RAM usage is determined by this value.
+
+#ifndef NRF_LOG_BACKEND_MAX_STRING_LENGTH
+#define NRF_LOG_BACKEND_MAX_STRING_LENGTH 256
+#endif
+
+// <o> NRF_LOG_TIMESTAMP_DIGITS - Number of digits for timestamp 
+// <i> If higher resolution timestamp source is used it might be needed to increase that
+
+#ifndef NRF_LOG_TIMESTAMP_DIGITS
+#define NRF_LOG_TIMESTAMP_DIGITS 8
+#endif
+
+// <e> NRF_LOG_BACKEND_SERIAL_USES_UART - If enabled data is printed over UART
+//==========================================================
+#ifndef NRF_LOG_BACKEND_SERIAL_USES_UART
+#define NRF_LOG_BACKEND_SERIAL_USES_UART 0
+#endif
+#if  NRF_LOG_BACKEND_SERIAL_USES_UART
+// <o> NRF_LOG_BACKEND_SERIAL_UART_BAUDRATE  - Default Baudrate
+ 
+// <323584=> 1200 baud 
+// <643072=> 2400 baud 
+// <1290240=> 4800 baud 
+// <2576384=> 9600 baud 
+// <3862528=> 14400 baud 
+// <5152768=> 19200 baud 
+// <7716864=> 28800 baud 
+// <10289152=> 38400 baud 
+// <15400960=> 57600 baud 
+// <20615168=> 76800 baud 
+// <30801920=> 115200 baud 
+// <61865984=> 230400 baud 
+// <67108864=> 250000 baud 
+// <121634816=> 460800 baud 
+// <251658240=> 921600 baud 
+// <268435456=> 57600 baud 
+
+#ifndef NRF_LOG_BACKEND_SERIAL_UART_BAUDRATE
+#define NRF_LOG_BACKEND_SERIAL_UART_BAUDRATE 30801920
+#endif
+
+// <o> NRF_LOG_BACKEND_SERIAL_UART_TX_PIN - UART TX pin 
+#ifndef NRF_LOG_BACKEND_SERIAL_UART_TX_PIN
+#define NRF_LOG_BACKEND_SERIAL_UART_TX_PIN 6
+#endif
+
+// <o> NRF_LOG_BACKEND_SERIAL_UART_RX_PIN - UART RX pin 
+#ifndef NRF_LOG_BACKEND_SERIAL_UART_RX_PIN
+#define NRF_LOG_BACKEND_SERIAL_UART_RX_PIN 8
+#endif
+
+// <o> NRF_LOG_BACKEND_SERIAL_UART_RTS_PIN - UART RTS pin 
+#ifndef NRF_LOG_BACKEND_SERIAL_UART_RTS_PIN
+#define NRF_LOG_BACKEND_SERIAL_UART_RTS_PIN 5
+#endif
+
+// <o> NRF_LOG_BACKEND_SERIAL_UART_CTS_PIN - UART CTS pin 
+#ifndef NRF_LOG_BACKEND_SERIAL_UART_CTS_PIN
+#define NRF_LOG_BACKEND_SERIAL_UART_CTS_PIN 7
+#endif
+
+// <o> NRF_LOG_BACKEND_SERIAL_UART_FLOW_CONTROL  - Hardware Flow Control
+ 
+// <0=> Disabled 
+// <1=> Enabled 
+
+#ifndef NRF_LOG_BACKEND_SERIAL_UART_FLOW_CONTROL
+#define NRF_LOG_BACKEND_SERIAL_UART_FLOW_CONTROL 0
+#endif
+
+// <o> NRF_LOG_BACKEND_UART_INSTANCE  - UART instance used
+ 
+// <0=> 0 
+
+#ifndef NRF_LOG_BACKEND_UART_INSTANCE
+#define NRF_LOG_BACKEND_UART_INSTANCE 0
+#endif
+
+#endif //NRF_LOG_BACKEND_SERIAL_USES_UART
+// </e>
+
+// <e> NRF_LOG_BACKEND_SERIAL_USES_RTT - If enabled data is printed using RTT
+//==========================================================
+#ifndef NRF_LOG_BACKEND_SERIAL_USES_RTT
+#define NRF_LOG_BACKEND_SERIAL_USES_RTT 1
+#endif
+#if  NRF_LOG_BACKEND_SERIAL_USES_RTT
+// <o> NRF_LOG_BACKEND_RTT_OUTPUT_BUFFER_SIZE - RTT output buffer size. 
+// <i> Should be equal or bigger than \ref NRF_LOG_BACKEND_MAX_STRING_LENGTH.
+// <i> This value is used in Segger RTT configuration to set the buffer size
+// <i> if it is bigger than default RTT buffer size.
+
+#ifndef NRF_LOG_BACKEND_RTT_OUTPUT_BUFFER_SIZE
+#define NRF_LOG_BACKEND_RTT_OUTPUT_BUFFER_SIZE 512
+#endif
+
+#endif //NRF_LOG_BACKEND_SERIAL_USES_RTT
+// </e>
+
+// </h> 
+//==========================================================
+
+// </h> 
+//==========================================================
+
+// <h> nRF_Segger_RTT 
+
+//==========================================================
+// <h> segger_rtt - SEGGER RTT
+
+//==========================================================
+// <o> SEGGER_RTT_CONFIG_BUFFER_SIZE_UP - Size of upstream buffer. 
+// <i> Note that either @ref NRF_LOG_BACKEND_RTT_OUTPUT_BUFFER_SIZE
+// <i> or this value is actually used. It depends on which one is bigger.
+
+#ifndef SEGGER_RTT_CONFIG_BUFFER_SIZE_UP
+#define SEGGER_RTT_CONFIG_BUFFER_SIZE_UP 64
+#endif
+
+// <o> SEGGER_RTT_CONFIG_MAX_NUM_UP_BUFFERS - Size of upstream buffer. 
+#ifndef SEGGER_RTT_CONFIG_MAX_NUM_UP_BUFFERS
+#define SEGGER_RTT_CONFIG_MAX_NUM_UP_BUFFERS 2
+#endif
+
+// <o> SEGGER_RTT_CONFIG_BUFFER_SIZE_DOWN - Size of upstream buffer. 
+#ifndef SEGGER_RTT_CONFIG_BUFFER_SIZE_DOWN
+#define SEGGER_RTT_CONFIG_BUFFER_SIZE_DOWN 16
+#endif
+
+// <o> SEGGER_RTT_CONFIG_MAX_NUM_DOWN_BUFFERS - Size of upstream buffer. 
+#ifndef SEGGER_RTT_CONFIG_MAX_NUM_DOWN_BUFFERS
+#define SEGGER_RTT_CONFIG_MAX_NUM_DOWN_BUFFERS 2
+#endif
+
+// <o> SEGGER_RTT_CONFIG_DEFAULT_MODE  - RTT behavior if the buffer is full.
+ 
+
+// <i> The following modes are supported:
+// <i> - SKIP  - Do not block, output nothing.
+// <i> - TRIM  - Do not block, output as much as fits.
+// <i> - BLOCK - Wait until there is space in the buffer.
+// <0=> SKIP 
+// <1=> TRIM 
+// <2=> BLOCK_IF_FIFO_FULL 
+
+#ifndef SEGGER_RTT_CONFIG_DEFAULT_MODE
+#define SEGGER_RTT_CONFIG_DEFAULT_MODE 0
+#endif
+
+// </h> 
+//==========================================================
 
 // </h> 
 //==========================================================
