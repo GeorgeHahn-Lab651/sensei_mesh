@@ -173,19 +173,19 @@ RBC_MESH      := rbc_mesh
 
 # TODO: This is hardcoded on - any reason to kee this flag?
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
-	SERIAL_STRING := "_serial"
+  SERIAL_STRING := "_serial"
 #	CFLAGS += -DRBC_MESH_SERIAL
 endif
 CFLAGS += -DRBC_MESH_SERIAL=1 -DBSP_SIMPLE
 
 ifeq ($(USE_DFU), "yes")
-	DFU_STRING="_dfu"
+  DFU_STRING="_dfu"
 endif
 
-ifeq ($(MAKECMDGOALS),debug)
+ifneq ($(filter debug,$(MAKECMDGOALS)),)
   BUILD_TYPE := debug
 else
-  BUILD_TYPE := release
+  BUILD_TYPE ?= release
 endif
 
 OUTPUT_NAME := rbc_mesh$(SERIAL_STRING)$(DFU_STRING)_$(TARGET_BOARD)_$(SOC_FAMILY)_$(BUILD_TYPE)
@@ -388,10 +388,6 @@ all: $(BUILD_DIRECTORIES) $(OBJECTS) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).e
 	@echo "               $(OUTPUT_NAME).hex"
 	@echo "*****************************************************"
 
-debug : all
-
-release : all
-
 # Create build directories
 $(BUILD_DIRECTORIES):
 	echo $(MAKEFILE_NAME)
@@ -429,13 +425,18 @@ $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex: $(OUTPUT_BINARY_DIRECTORY)/$(OUTP
 	@echo Preparing: $(OUTPUT_NAME).hex
 	$(NO_ECHO)$(OBJCOPY) -O ihex $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 
-# Merge SoftDevice with app hex
+# Merge SoftDevice with app hex (only required for native nRF5x builds)
 $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 	@echo Preparing $(OUTPUT_NAME)_merged.hex
 	$(NO_ECHO)mergehex -m $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex $(NRF52_SOFTDEVICE_HEX) -o $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex
 
 
 # Phonies:
+.PHONY: debug
+debug: all ;@:
+
+.PHONY: release
+release: all ;@:
 
 .PHONY: echosize
 echosize: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf
@@ -447,7 +448,6 @@ echosize: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf
 .PHONY: install_simblee
 install_simblee: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 	@echo Installing: $(OUTPUT_NAME).hex
-	# TODO: handle nRF52
 	$(NO_ECHO)$(RFD_LOADER) $(SERIAL_PORT) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 
 # Flash nRF52 devices
@@ -460,11 +460,12 @@ install_nordic: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex
 # Clean
 .PHONY: clean
 clean:
-	$(RM) $(BUILD_DIRECTORIES)
+	@echo Cleaning build directory
+	$(NO_ECHO)$(RM) $(BUILD_DIRECTORIES)
 
 .PHONY: cleanobj
 cleanobj:
-	$(RM) $(BUILD_DIRECTORIES)/*.o
+	$(NO_ECHO)$(RM) $(BUILD_DIRECTORIES)/*.o
 
 # Set device configuration via serial
 .PHONY: configure
@@ -472,8 +473,11 @@ configure:
 	./pyaci/configure_sensor.py $(SENSOR_CONFIGURATION_OPTIONS) -d $(SERIAL_PORT) $(SENSOR_ID)
 
 # High level commands
-.PHONY: nrf51
-nrf51: all install_simblee configure
+#.PHONY: nrf51
+#nrf51: all install_nordic_NRF51 configure
+
+.PHONY: simblee
+simblee: all install_simblee configure
 
 .PHONY: nrf52
 nrf52: all install_nordic configure
