@@ -1,7 +1,7 @@
 UseTab: (VS Code current setting)
 IndentWidth: (VS Code current setting)
 IndentCaseLabels: false
-ColumnLimit: 100
+ColumnLimit: 0
 AlignEscapedNewlinesLeft: false
 AlignTrailingComments: true
 AllowAllParametersOfDeclarationOnNextLine: false

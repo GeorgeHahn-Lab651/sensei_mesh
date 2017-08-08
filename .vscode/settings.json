@@ -1,5 +1,6 @@
 {
     "editor.formatOnSave": true,
+    "C_Cpp.clang_format_path": "C:\\Program Files (x86)\\LLVM\\bin\\clang-format.exe",
     "files.associations": {
         "bsp.h": "c",
         "heartbeat.h": "c",
@@ -34,6 +35,7 @@
         "segger_rtt_conf.h": "c",
         "nrf_log.h": "c",
         "nrf_log_ctrl.h": "c",
-        "sdk_config.h": "c"
+        "sdk_config.h": "c",
+        "app_cmd.h": "c"
     }
 }
