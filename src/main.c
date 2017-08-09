@@ -1,7 +1,7 @@
-#define NRF_LOG_MODULE_NAME "main.c"
-
-#include "nrf_log.h"
-#include "nrf_log_ctrl.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "mesh_aci.h"
 #include "rbc_mesh.h"
@@ -10,6 +10,7 @@
 #include "app_error.h"
 #include "boards.h"
 #include "bsp.h"
+#include "bsp_btn_ble.h"
 #include "config.h"
 #include "handles.h"
 #include "heartbeat.h"
@@ -20,12 +21,16 @@
 #include "scheduler.h"
 #include "sensor.h"
 #include "serial_handler.h"
+#include "app_util.h"
+#include "app_timer.h"
 #include "softdevice_handler.h"
 #include "transport_control.h"
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+
+#include "SEGGER_RTT.h"
+
+#define NRF_LOG_MODULE_NAME "main.c"
+#include "nrf_log.h"
+#include "nrf_log_ctrl.h"
 
 #if NORDIC_SDK_VERSION >= 11
 #include "nrf_nvic.h"
@@ -35,19 +40,17 @@
 #define MESH_INTERVAL_MIN_MS (100)
 
 #if NORDIC_SDK_VERSION >= 11
-nrf_nvic_state_t nrf_nvic_state = {0};
-static nrf_clock_lf_cfg_t m_clock_cfg = {.source = NRF_CLOCK_LF_SRC_XTAL,
-                                         .xtal_accuracy =
-                                             NRF_CLOCK_LF_XTAL_ACCURACY_75_PPM};
+  nrf_nvic_state_t nrf_nvic_state = {0};
+  
 
-#define MESH_CLOCK_SOURCE                                                      \
-  (m_clock_cfg) /* < Clock source used by the Softdevice. For calibrating      \
-                   timeslot time. */
+/**< Clock source used by the                 \
+     Softdevice.For calibrating timeslot      \
+     time. */
+  static nrf_clock_lf_cfg_t clock_lf_cfg = NRF_CLOCK_LFCLKSRC;
+  #define MESH_CLOCK_SOURCE (clock_lf_cfg)
 #else
-#define MESH_CLOCK_SOURCE                                                      \
-  (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM) /**< Clock source used by the               \
-                                      Softdevice.For calibrating timeslot      \
-                                      time. */
+  #define MESH_CLOCK_SOURCE                                                      \
+    (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
 #endif
 
 /** @brief General error handler. */
@@ -59,6 +62,12 @@ static inline void error_loop(void) {
   }
 }
 
+static void log_init(void)
+{
+    ret_code_t err_code = NRF_LOG_INIT(NULL);
+    APP_ERROR_CHECK(err_code);
+}
+
 /**
 * @brief Softdevice crash handler, never returns
 *
@@ -68,13 +77,13 @@ static inline void error_loop(void) {
 */
 void sd_assert_handler(uint32_t pc, uint16_t line_num,
                        const uint8_t *p_file_name) {
-  NRF_LOG_ERROR("sd_assert_handler (looping forever)");
+  SEGGER_RTT_WriteString(0, "sd_assert_handler (looping forever)\n");
   error_loop();
 }
 
 /** @brief Hardware fault handler. */
 void HardFault_Handler(void) {
-  NRF_LOG_ERROR("HardFault_Handler (looping forever)");
+  SEGGER_RTT_WriteString(0, "HardFault_Handler (looping forever)\n");
   error_loop();
 }
 
@@ -133,23 +142,32 @@ static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
 }
 
 int main(void) {
-  NRF_LOG_INIT(NULL);
+  SEGGER_RTT_WriteString(0, "\nmain()\n");
 
-  NRF_LOG_DEBUG("Initialize: bsp");
   bsp_init(BSP_INIT_BUTTONS & BSP_INIT_LED, 0, 0);
 
-  NRF_LOG_DEBUG("Initialize: mesh_control");
+  log_init();
+
+  SEGGER_RTT_WriteString(0, "Mesh control init\n");
   mesh_control_init();
 
 #if LEDS_NUMBER > 0
+  SEGGER_RTT_WriteString(0, "Some LEDs\n");
   nrf_gpio_cfg_output(LED_START + LED_GREEN);
   nrf_gpio_cfg_output(LED_START + LED_RED);
   nrf_gpio_cfg_output(LED_START + LED_BLUE);
 #endif
 
-  NRF_LOG_DEBUG("Initialize: SoftDevice");
+  SEGGER_RTT_WriteString(0, "Enabling sd handler\n");
   /* Enable Softdevice (including sd_ble before framework */
+  
+  // Initialize the SoftDevice handler module.
+#if (NORDIC_SDK_VERSION >= 11)
   SOFTDEVICE_HANDLER_INIT(&MESH_CLOCK_SOURCE, NULL);
+#else
+  SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SOURCE, NULL);
+#endif
+  SEGGER_RTT_WriteString(0, "Done enabling sd handler\n");
   softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
 
   // clock_initialization();
@@ -180,7 +198,7 @@ int main(void) {
   init_params.access_addr = MESH_ACCESS_ADDR;
   init_params.interval_min_ms = MESH_INTERVAL_MIN_MS;
   init_params.channel = DEFAULT_MESH_CHANNEL;
-  init_params.lfclksrc = MESH_CLOCK_SOURCE;
+  init_params.lfclksrc = clock_lf_cfg; // MESH_CLOCK_SOURCE;
   init_params.tx_power = RBC_MESH_TXPOWER_0dBm;
 
   uint32_t error_code;
@@ -203,10 +221,8 @@ int main(void) {
   // }
 
   NRF_LOG_DEBUG("Initialize: heartbeat");
-  scheduler_init(
-      app_config.sleep_enabled); // Initializes, but does not start, clock
-  heartbeat_init(
-      DEFAULT_MESH_CHANNEL); // Inits structures for sending heartbeat
+  scheduler_init(app_config.sleep_enabled); // Initializes, but does not start, clock
+  heartbeat_init(DEFAULT_MESH_CHANNEL); // Inits structures for sending heartbeat
 
   /* Initialize mesh ACI */
   mesh_aci_init();
@@ -241,6 +257,7 @@ int main(void) {
   //   __WFE();
   // }
 
+  SEGGER_RTT_WriteString(0, "Main loop\n");
   rbc_mesh_event_t evt;
   while (true) {
     if (rbc_mesh_event_get(&evt) == NRF_SUCCESS) {

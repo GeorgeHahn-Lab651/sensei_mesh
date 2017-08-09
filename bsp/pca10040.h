@@ -155,7 +155,6 @@ extern "C" {
                                  .rc_temp_ctiv  = 0,                                \
                                  .xtal_accuracy = NRF_CLOCK_LF_XTAL_ACCURACY_20_PPM}
 
-
 #ifdef __cplusplus
 }
 #endif

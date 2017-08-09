@@ -6,7 +6,9 @@
 
 # TODO: Move these into make targets
 #TARGET_BOARD         ?= BOARD_RFD77201
-TARGET_BOARD         ?= BOARD_SHOE_SENSORv2
+TARGET_BOARD         ?= BOARD_PCA10040
+#TARGET_BOARD         ?= BOARD_SHOE_SENSORv2
+
 SOC_FAMILY           := nRF52
 #SOC_FAMILY           := Simblee
 
@@ -17,6 +19,7 @@ NRF51_SDK_BASE       := C:/Users/georg/sdks/nRF51_SDK_8.1.0_b6ed55f
 NRF51_SDK_VERSION    := 8
 NRF52_SDK_BASE       := C:/Users/georg/sdks/nRF5_SDK_12.3.0_d7731ad
 NRF52_SDK_VERSION    := 12
+MESH_BASE            := C:/Users/georg/sdks/ble_mesh_v0.9.1-Alpha
 SIMBLEE_BASE         := C:/Users/georg/sdks/Simblee_248
 
 NRF51_SOFTDEVICE_HEX := C:\Users\georg\sdks\nRF51_SDK_8.1.0_b6ed55f\components\softdevice\s130\hex\s130_softdevice.hex
@@ -98,11 +101,7 @@ $(info Building for nRF52)
 
 SDK_BASE      := $(NRF52_SDK_BASE)
 COMPONENTS    := $(SDK_BASE)/components
-LINKER_SCRIPT := $(COMPONENTS)/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf52832_xxaa.ld
-
-# More linker scripts at: C:\Users\georg\sdks\nRF5_SDK_13.1.0_7ca7556\components\toolchain\gcc
-# This one is probably to enable mesh OTA:
-# $(SDK_BASE)/ble_mesh_v0.9.1-Alpha/lib/softdevice/s132/toolchain/armgcc/armgcc_s132_nrf52832_xxaa.ld
+LINKER_SCRIPT := src/nrf52832.ld
 
 ASM_SOURCE_FILES  += $(COMPONENTS)/toolchain/gcc/gcc_startup_nrf52.S
 
@@ -155,13 +154,13 @@ CFLAGS += -mcpu=cortex-m4
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 CXXFLAGS += -MMD -mcpu=cortex-m4 -DF_CPU=64000000
-CXXFLAGS += -DARDUINO=10801 #???
 
 LDFLAGS += -mcpu=cortex-m4
 LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 
 ASMFLAGS += -D NRF52
 ASMFLAGS += -D S132
+ASMFLAGS += -D NORDIC_SDK_VERSION=$(NRF52_SDK_VERSION)
 ASMFLAGS += -D NRF52832
 ASMFLAGS += -D NRF52832_XXAA
 
@@ -172,12 +171,12 @@ endif # SOC_FAMILY
 TEMPLATE_PATH := $(COMPONENTS)/toolchain/gcc
 RBC_MESH      := rbc_mesh
 
-# TODO: This is hardcoded on - any reason to kee this flag?
+# TODO: This is hardcoded on - any reason to keep this flag?
 ifeq ($(USE_RBC_MESH_SERIAL), "yes")
   SERIAL_STRING := "_serial"
 #	CFLAGS += -DRBC_MESH_SERIAL
 endif
-CFLAGS += -DRBC_MESH_SERIAL=1 -DBSP_SIMPLE
+CFLAGS += -DRBC_MESH_SERIAL=1 #-DBSP_SIMPLE
 
 ifeq ($(USE_DFU), "yes")
   DFU_STRING="_dfu"
@@ -276,10 +275,13 @@ C_SOURCE_FILES += $(COMPONENTS)/softdevice/common/softdevice_handler/softdevice_
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/gpiote/nrf_drv_gpiote.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/common/nrf_drv_common.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/uart/nrf_drv_uart.c
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/clock/nrf_drv_clock.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_util_platform.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error_weak.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/sdk_errors.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/bsp/bsp_btn_ble.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/button/app_button.c
 
 vpath %.c $(C_PATHS)
 
@@ -295,8 +297,11 @@ INC_PATHS += -I$(COMPONENTS)/softdevice/common/softdevice_handler
 INC_PATHS += -I$(COMPONENTS)/toolchain/gcc
 INC_PATHS += -I$(COMPONENTS)/libraries/util
 INC_PATHS += -I$(COMPONENTS)/libraries/timer
+INC_PATHS += -I$(COMPONENTS)/libraries/bsp
+INC_PATHS += -I$(COMPONENTS)/libraries/button
 INC_PATHS += -I$(COMPONENTS)/ble/common
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/common
+INC_PATHS += -I$(COMPONENTS)/drivers_nrf/clock
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/gpiote
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/spi_slave
@@ -314,27 +319,20 @@ OUTPUT_BINARY_DIRECTORY = $(OBJECT_DIRECTORY)
 BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LISTING_DIRECTORY) )
 
 ifeq ($(BUILD_TYPE),debug)
-  DEBUG_FLAGS += -D DEBUG -g -O0
+  DEBUG_FLAGS += -D DEBUG -g -O0 -ggdb
 else
   DEBUG_FLAGS += -D NDEBUG -O3
 endif
 
 # flags common to all targets
-#CFLAGS += -save-temps
 CFLAGS += $(DEBUG_FLAGS)
 CFLAGS += -D BLE_STACK_SUPPORT_REQD
 CFLAGS += -D SOFTDEVICE_PRESENT
 CFLAGS += -D $(TARGET_BOARD)
 CFLAGS += -mthumb -mabi=aapcs --std=gnu11
-CFLAGS += -Wall -Werror -Wno-unused-function
+CFLAGS += -Wall -Werror -Wno-unused-function -Wno-comment
 CFLAGS += -Wa,-adhln
-CFLAGS += -ffunction-sections
-CFLAGS += -fdata-sections -fno-strict-aliasing
-CFLAGS += -fno-builtin
-
-
-# -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -fno-builtin -MMD -mcpu=cortex-m0
-# -DF_CPU=16000000 -DARDUINO=10801 -D__PROJECT__="ledtest.ino" -mthumb -D__Simblee__
+CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin
 
 CXXFLAGS += -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-rtti
 CXXFLAGS += -fno-exceptions -fno-builtin -MMD -mthumb
@@ -383,7 +381,7 @@ all: $(BUILD_DIRECTORIES) $(OBJECTS) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).e
 	@echo "build with:    $(TOOLCHAIN_BASE)"
 	@echo "build target:  $(TARGET_BOARD)"
 	@echo "build options  --"
-	@echo "               USE_DFU             $(USE_DFU)"
+	@echo "USE_DFU        $(USE_DFU)"
 	@echo "build products --"
 	@echo "               $(OUTPUT_NAME).elf"
 	@echo "               $(OUTPUT_NAME).hex"
@@ -451,11 +449,25 @@ install_simblee: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 	@echo Installing: $(OUTPUT_NAME).hex
 	$(NO_ECHO)$(RFD_LOADER) $(SERIAL_PORT) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 
-# Flash nRF52 devices
-.PHONY: install_nordic
-install_nordic: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex
+# Flash nRF52 devices (incl SoftDevice; eg for production)
+.PHONY: install_nordic_full
+install_nordic_full: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex
 	@echo Installing: $(OUTPUT_NAME)_merged.hex
 	$(NO_ECHO)nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex --verify --chiperase -f NRF52
+	$(NO_ECHO)nrfjprog -r -f NRF52
+
+# Flash nrf52 softdevice
+.PHONY: flash_softdevice_nrf52
+flash_softdevice_nrf52:
+	@echo Flashing: $(NRF52_SOFTDEVICE_HEX)
+	nrfjprog --program $(NRF52_SOFTDEVICE_HEX) -f nrf52 --sectorerase 
+	nrfjprog --reset -f nrf52
+
+# Flash nRF52 devices
+.PHONY: install_nordic
+install_nordic: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
+	@echo Installing: $(OUTPUT_NAME).hex
+	$(NO_ECHO)nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex --verify --sectorerase -f NRF52
 	$(NO_ECHO)nrfjprog -r -f NRF52
 
 # Clean
@@ -474,13 +486,22 @@ configure:
 	./pyaci/configure_sensor.py $(SENSOR_CONFIGURATION_OPTIONS) -d $(SERIAL_PORT) $(SENSOR_ID)
 
 # High level commands
-#.PHONY: nrf51
-#nrf51: all install_nordic_NRF51 configure
+.PHONY: nrf51
+nrf51: all install_nordic_NRF51 configure
 
 .PHONY: simblee
 simblee: all install_simblee configure
 
+.DEFAULT_GOAL:=nrf52
 .PHONY: nrf52
 nrf52: all install_nordic configure
 
-.DEFAULT_GOAL:=nrf52
+# Reset the device
+.PHONY: reset
+reset:
+	nrfjprog --reset -f $(SOC_FAMILY)
+
+# Erase the device
+.PHONY: erase
+erase:
+	nrfjprog --eraseall -f $(SOC_FAMILY)

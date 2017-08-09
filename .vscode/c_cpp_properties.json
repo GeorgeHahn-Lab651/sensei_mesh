@@ -55,7 +55,8 @@
             ],
             "defines": [
                 "S132",
-                "NRF52"
+                "NRF52",
+                "NORDIC_SDK_VERSION=11"
             ],
             "intelliSenseMode": "msvc-x64",
             "browse": {

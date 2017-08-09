@@ -36,6 +36,7 @@
         "nrf_log.h": "c",
         "nrf_log_ctrl.h": "c",
         "sdk_config.h": "c",
-        "app_cmd.h": "c"
+        "app_cmd.h": "c",
+        "app_timer.h": "c"
     }
 }
