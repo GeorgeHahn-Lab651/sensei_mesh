@@ -47,22 +47,20 @@ CXX_SOURCE_FILES += $(SIMBLEE_BASE)/variants/Simblee/variant.cpp
 
 C_SOURCE_FILES += $(COMPONENTS)/toolchain/system_nrf51.c
 
-INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
-INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee
-INC_PATHS += -I$(SIMBLEE_BASE)/variants/Simblee
-CXX_INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
-CXX_INC_PATHS += -I$(SIMBLEE_BASE)/variants/Simblee
-CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee
+INC_BOTH += -I$(SIMBLEE_BASE)/cores/arduino
+INC_BOTH += -I$(SIMBLEE_BASE)/system/Simblee
+INC_BOTH += -I$(SIMBLEE_BASE)/variants/Simblee
+INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
 CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/Simblee/include
 CXX_INC_PATHS += -I$(SIMBLEE_BASE)/system/CMSIS/CMSIS/Include
 
 INC_PATHS += -I$(COMPONENTS)/drivers_nrf/twi_master/incubated/
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/twi_master/incubated/twi_hw_master.c
 
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/adc
-INC_PATHS += -I$(COMPONENTS)/libraries/pstorage
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/adc
+INC_BOTH += -I$(COMPONENTS)/libraries/pstorage
 
-INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
+INC_BOTH += -I$(COMPONENTS)/softdevice/s110/headers
 
 LDFLAGS += -L$(SIMBLEE_BASE)/variants/Simblee
 LIBS += -lSimbleeSystem -lSimblee -lSimbleeBLE -lSimbleeGZLL -lSimbleeForMobile -lSimbleeCOM
@@ -110,59 +108,53 @@ C_SOURCE_FILES += $(COMPONENTS)/toolchain/system_nrf52.c
 #INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
 #CXX_INC_PATHS += -I$(SIMBLEE_BASE)/cores/arduino
 
-INC_PATHS += -Iconfig/
-CXX_INC_PATHS += -Iconfig/
+INC_BOTH += -Iconfig
 
-INC_PATHS += -I$(COMPONENTS)/toolchain/cmsis/include
-INC_PATHS += -I$(COMPONENTS)/toolchain/
-CXX_INC_PATHS += -I$(COMPONENTS)/toolchain/cmsis/include
-CXX_INC_PATHS += -I$(COMPONENTS)/toolchain/
+INC_BOTH += -I$(COMPONENTS)/toolchain/cmsis/include
+INC_BOTH += -I$(COMPONENTS)/toolchain
 
 # Softdevice
-INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers
-INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers/nrf52
-CXX_INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers
-CXX_INC_PATHS += -I$(COMPONENTS)/softdevice/s132/headers/nrf52
+INC_BOTH += -I$(COMPONENTS)/softdevice/s132/headers
+INC_BOTH += -I$(COMPONENTS)/softdevice/s132/headers/nrf52
 
 # SDK12 libs
-INC_PATHS += -I$(COMPONENTS)/libraries/log
-INC_PATHS += -I$(COMPONENTS)/libraries/log/src
-INC_PATHS += -I$(COMPONENTS)/libraries/timer
-INC_PATHS += -I$(COMPONENTS)/libraries/fstorage
-INC_PATHS += -I$(COMPONENTS)/libraries/experimental_section_vars
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/saadc
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/ppi
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/timer
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/uart
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/twi_master/deprecated/
+INC_BOTH += -I$(COMPONENTS)/libraries/log
+INC_BOTH += -I$(COMPONENTS)/libraries/log/src
+INC_BOTH += -I$(COMPONENTS)/libraries/timer
+INC_BOTH += -I$(COMPONENTS)/libraries/crc16
+INC_BOTH += -I$(COMPONENTS)/libraries/experimental_section_vars
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/saadc
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/ppi
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/timer
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/uart
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/twi_master/deprecated/
+
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/twi_master/deprecated/twi_hw_master.c
 
-# TODO: Consider moving config from fstorage to fds
-INC_PATHS += -I$(COMPONENTS)/libraries/fds
+INC_BOTH += -I$(COMPONENTS)/libraries/fds
+INC_BOTH += -I$(COMPONENTS)/libraries/fstorage
 
-CFLAGS += -D NRF52
-CFLAGS += -D S132
-CFLAGS += -D NRF52832
-CFLAGS += -D NRF52832_XXAA # Will make SDK13 port easier
-CFLAGS += -D NORDIC_SDK_VERSION=$(NRF52_SDK_VERSION)
-CFLAGS += -D RAM_R1_BASE=0x20003000
-CFLAGS += -DNRF_SD_BLE_API_VERSION=3
-CFLAGS += -DARM_MATH_CM4
-CFLAGS += -DNRF_LOG_USES_RTT=1
+COMMON_FLAGS += -DNRF52
+COMMON_FLAGS += -DS132
+COMMON_FLAGS += -DNRF52832
+COMMON_FLAGS += -DNRF52832_XXAA
+COMMON_FLAGS += -DNORDIC_SDK_VERSION=$(NRF52_SDK_VERSION)
+COMMON_FLAGS += -DRAM_R1_BASE=0x20003000
+COMMON_FLAGS += -DNRF_SD_BLE_API_VERSION=3
+COMMON_FLAGS += -DARM_MATH_CM4
+COMMON_FLAGS += -DNRF_LOG_USES_RTT=1
+COMMON_FLAGS += -DF_CPU=64000000
 
-CFLAGS += -mcpu=cortex-m4
-CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+# Enable CRCs in the fds library
+COMMON_FLAGS += -DFDS_CRC_ENABLED
 
-CXXFLAGS += -MMD -mcpu=cortex-m4 -DF_CPU=64000000
+COMMON_FLAGS += -mcpu=cortex-m4
+COMMON_FLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
+
+CXXFLAGS += -MMD
 
 LDFLAGS += -mcpu=cortex-m4
 LDFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
-
-ASMFLAGS += -D NRF52
-ASMFLAGS += -D S132
-ASMFLAGS += -D NORDIC_SDK_VERSION=$(NRF52_SDK_VERSION)
-ASMFLAGS += -D NRF52832
-ASMFLAGS += -D NRF52832_XXAA
 
 endif # SOC_FAMILY
 
@@ -176,7 +168,12 @@ ifeq ($(USE_RBC_MESH_SERIAL), "yes")
   SERIAL_STRING := "_serial"
 #	CFLAGS += -DRBC_MESH_SERIAL
 endif
-CFLAGS += -DRBC_MESH_SERIAL=1 #-DBSP_SIMPLE
+COMMON_FLAGS += -DRBC_MESH_SERIAL=1 #-DBSP_SIMPLE
+
+
+ifdef JLINK_SN
+  JLINK_SERIAL_NUMBER= --snr $(JLINK_SN)
+endif
 
 ifeq ($(USE_DFU), "yes")
   DFU_STRING="_dfu"
@@ -229,23 +226,22 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 # source common to all targets
 
-C_SOURCE_FILES += src/main.c src/config.c src/sensor.c src/app_cmd.c \
- 	src/scheduler.c src/proximity.c src/heartbeat.c src/battery.c src/shoe_accel.c \
+C_SOURCE_FILES += src/proximity.c src/battery.c src/shoe_accel.c \
 	src/app_evt.c src/mesh_control.c bsp/bsp.c src/i2c.c src/jostle_detect.c
+CXX_SOURCE_FILES += src/config.cpp src/main.cpp src/sensor.cpp src/app_cmd.cpp \
+	src/scheduler.cpp src/heartbeat.cpp
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/crc16/crc16.c
 
 C_SOURCE_FILES += $(RBC_MESH)/src/serial_handler_uart.c
 C_SOURCE_FILES += $(RBC_MESH)/src/mesh_aci.c
 
 ifeq ($(CLOCK_MASTER), "yes")
-	CFLAGS += -D CLOCK_MASTER=1
+	COMMON_FLAGS += -D CLOCK_MASTER=1
 endif
 
 ifeq ($(USE_DFU), "yes")
-	CFLAGS += -D MESH_DFU=1
-	C_SOURCE_FILES += $(RBC_MESH)/src/dfu_app.c
-	C_SOURCE_FILES += $(RBC_MESH)/src/mesh_flash.c
-	C_SOURCE_FILES += $(RBC_MESH)/src/nrf_flash.c
+	COMMON_FLAGS += -D MESH_DFU=1
 endif
 
 
@@ -282,34 +278,38 @@ C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error_weak.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/sdk_errors.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/bsp/bsp_btn_ble.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/button/app_button.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/fds/fds.c
+C_SOURCE_FILES += $(COMPONENTS)/libraries/fstorage/fstorage.c
 
 vpath %.c $(C_PATHS)
 
 # includes common to all targets
 
-INC_PATHS += -Isrc
-INC_PATHS += -I$(RBC_MESH)
-INC_PATHS += -I$(RBC_MESH)/include
-INC_PATHS += -Ibsp
-INC_PATHS += -I$(SDK_BASE)/external/segger_rtt
+INC_BOTH += -Isrc
+INC_BOTH += -I$(RBC_MESH)
+INC_BOTH += -I$(RBC_MESH)/include
+INC_BOTH += -Ibsp
+INC_BOTH += -I$(SDK_BASE)/external/segger_rtt
 
-INC_PATHS += -I$(COMPONENTS)/softdevice/common/softdevice_handler
-INC_PATHS += -I$(COMPONENTS)/toolchain/gcc
-INC_PATHS += -I$(COMPONENTS)/libraries/util
-INC_PATHS += -I$(COMPONENTS)/libraries/timer
-INC_PATHS += -I$(COMPONENTS)/libraries/bsp
-INC_PATHS += -I$(COMPONENTS)/libraries/button
-INC_PATHS += -I$(COMPONENTS)/ble/common
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/common
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/clock
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/hal
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/gpiote
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/spi_slave
-INC_PATHS += -I$(COMPONENTS)/drivers_nrf/delay
-INC_PATHS += -I$(COMPONENTS)/toolchain/gcc
-INC_PATHS += -I$(COMPONENTS)/toolchain
-INC_PATHS += -I$(COMPONENTS)/device
-INC_PATHS += -I$(COMPONENTS)/softdevice/s110/headers
+INC_BOTH += -I$(COMPONENTS)/softdevice/common/softdevice_handler
+INC_BOTH += -I$(COMPONENTS)/toolchain
+INC_BOTH += -I$(COMPONENTS)/toolchain/gcc
+INC_BOTH += -I$(COMPONENTS)/libraries/util
+INC_BOTH += -I$(COMPONENTS)/libraries/timer
+INC_BOTH += -I$(COMPONENTS)/libraries/bsp
+INC_BOTH += -I$(COMPONENTS)/libraries/button
+INC_BOTH += -I$(COMPONENTS)/ble/common
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/common
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/clock
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/hal
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/gpiote
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/spi_slave
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/delay
+INC_BOTH += -I$(COMPONENTS)/device
+
+# Includes that are shared between C and C++
+INC_PATHS += $(INC_BOTH)
+CXX_INC_PATHS += $(INC_BOTH)
 
 OBJECT_DIRECTORY = _build
 LISTING_DIRECTORY = $(OBJECT_DIRECTORY)
@@ -319,38 +319,47 @@ OUTPUT_BINARY_DIRECTORY = $(OBJECT_DIRECTORY)
 BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LISTING_DIRECTORY) )
 
 ifeq ($(BUILD_TYPE),debug)
-  DEBUG_FLAGS += -D DEBUG -g -O0 -ggdb
+  DEBUG_FLAGS += -DDEBUG=1 -g -O0 -ggdb
+
+  # Generate assembly listings
+  COMMON_FLAGS += -Wa,-adhln
 else
   DEBUG_FLAGS += -D NDEBUG -O3
 endif
 
 # flags common to all targets
-CFLAGS += $(DEBUG_FLAGS)
-CFLAGS += -D BLE_STACK_SUPPORT_REQD
-CFLAGS += -D SOFTDEVICE_PRESENT
-CFLAGS += -D $(TARGET_BOARD)
+COMMON_FLAGS += $(DEBUG_FLAGS)
+COMMON_FLAGS += -DBLE_STACK_SUPPORT_REQD
+COMMON_FLAGS += -DSOFTDEVICE_PRESENT
+COMMON_FLAGS += -D$(TARGET_BOARD)
+
+COMMON_FLAGS += -Wall -Werror -Wshadow -Wno-unused-function -Wno-comment
+
+## Flags that are shared between C, C++, and ASM
+CFLAGS += $(COMMON_FLAGS)
+CXXFLAGS += $(COMMON_FLAGS)
+ASMFLAGS += $(COMMON_FLAGS)
+
+## C flags
 CFLAGS += -mthumb -mabi=aapcs --std=gnu11
-CFLAGS += -Wall -Werror -Wno-unused-function -Wno-comment
-CFLAGS += -Wa,-adhln
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing -fno-builtin
 
-CXXFLAGS += -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-rtti
-CXXFLAGS += -fno-exceptions -fno-builtin -MMD -mthumb
+## CPP flags
+CXXFLAGS += -g -Os -w -std=gnu++14 -ffunction-sections -fdata-sections -fno-rtti
+CXXFLAGS += -fno-exceptions -fno-builtin -MMD -mthumb -fno-threadsafe-statics
 
 CXX := "$(GNU_INSTALL_ROOT)/bin/$(GNU_PREFIX)-g++"
 
+## Linker flags
 LDFLAGS += -Xlinker -Map=$(LISTING_DIRECTORY)/$(OUTPUT_NAME).map
 LDFLAGS += -mthumb -mabi=aapcs -L $(TEMPLATE_PATH) -T$(LINKER_SCRIPT)
 LDFLAGS += $(DEBUG_FLAGS)
 LDFLAGS += -Wl,--gc-sections
 LDFLAGS += --specs=nano.specs -lc -lnosys
 
-# Assembler flags
-ASMFLAGS += $(DEBUG_FLAGS)
+## Assembler flags
 ASMFLAGS += -x assembler-with-cpp
-ASMFLAGS += -D BLE_STACK_SUPPORT_REQD
-ASMFLAGS += -D SOFTDEVICE_PRESENT
-ASMFLAGS += -D $(TARGET_BOARD)
+
 
 C_SOURCE_FILE_NAMES = $(notdir $(C_SOURCE_FILES))
 C_PATHS = $(call remduplicates, $(dir $(C_SOURCE_FILES) ) )
@@ -365,8 +374,6 @@ ASM_PATHS = $(call remduplicates, $(dir $(ASM_SOURCE_FILES) ))
 ASM_OBJECTS = $(addprefix $(OBJECT_DIRECTORY)/, $(ASM_SOURCE_FILE_NAMES:.S=.o) )
 
 TOOLCHAIN_BASE = $(basename $(notdir $(GNU_INSTALL_ROOT)))
-
-TIMESTAMP := $(shell date +'%s')
 
 vpath %.c $(C_PATHS)
 vpath %.cpp $(CXX_PATHS)
@@ -394,20 +401,21 @@ $(BUILD_DIRECTORIES):
 
 # Create objects from C SRC files
 $(OBJECT_DIRECTORY)/%.o: %.c
-	@echo Compiling file: $(notdir $<)
+	@echo Compiling C file: $(notdir $<)
 	$(NO_ECHO)$(CC) $(CFLAGS) $(INC_PATHS) \
 	-c $< -o $@ > $(OUTPUT_BINARY_DIRECTORY)/$*.lst
 
 # Create objects from C++ SRC files
 $(OBJECT_DIRECTORY)/%.o: %.cpp
-	@echo Compiling file: $(notdir $<)
+	@echo Compiling C++ file: $(notdir $<)
 	$(NO_ECHO)$(CXX) $(CXXFLAGS) $(CXX_INC_PATHS) \
 	-c $< -o $@ > $(OUTPUT_BINARY_DIRECTORY)/$*.lst
 
 # Assemble files
 $(OBJECT_DIRECTORY)/%.o: %.s
 	@echo Assembling file: $(notdir $<)
-	$(NO_ECHO)$(CC) $(ASMFLAGS) $(INC_PATHS) -c -o $@ $<
+	$(NO_ECHO)$(CC) $(ASMFLAGS) $(INC_PATHS) \
+	-c -o $@ $< > $(OUTPUT_BINARY_DIRECTORY)/$*.lst
 
 # Link
 $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf: $(BUILD_DIRECTORIES) $(OBJECTS)
@@ -453,22 +461,22 @@ install_simblee: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 .PHONY: install_nordic_full
 install_nordic_full: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex
 	@echo Installing: $(OUTPUT_NAME)_merged.hex
-	$(NO_ECHO)nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex --verify --chiperase -f NRF52
-	$(NO_ECHO)nrfjprog -r -f NRF52
+	$(NO_ECHO)nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME)_merged.hex --verify --chiperase -f NRF52 $(JLINK_SERIAL_NUMBER)
+	$(NO_ECHO)nrfjprog -r -f NRF52 $(JLINK_SERIAL_NUMBER)
 
 # Flash nrf52 softdevice
 .PHONY: flash_softdevice_nrf52
 flash_softdevice_nrf52:
 	@echo Flashing: $(NRF52_SOFTDEVICE_HEX)
-	nrfjprog --program $(NRF52_SOFTDEVICE_HEX) -f nrf52 --sectorerase 
-	nrfjprog --reset -f nrf52
+	nrfjprog --program $(NRF52_SOFTDEVICE_HEX) -f nrf52 --sectorerase $(JLINK_SERIAL_NUMBER)
+	nrfjprog --reset -f nrf52 $(JLINK_SERIAL_NUMBER)
 
 # Flash nRF52 devices
 .PHONY: install_nordic
 install_nordic: $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex
 	@echo Installing: $(OUTPUT_NAME).hex
-	$(NO_ECHO)nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex --verify --sectorerase -f NRF52
-	$(NO_ECHO)nrfjprog -r -f NRF52
+	$(NO_ECHO)nrfjprog --program $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).hex --verify --sectorerase -f NRF52 $(JLINK_SERIAL_NUMBER)
+	$(NO_ECHO)nrfjprog -r -f NRF52 $(JLINK_SERIAL_NUMBER)
 
 # Clean
 .PHONY: clean
@@ -499,9 +507,9 @@ nrf52: all install_nordic configure
 # Reset the device
 .PHONY: reset
 reset:
-	nrfjprog --reset -f $(SOC_FAMILY)
+	nrfjprog --reset -f $(SOC_FAMILY) $(JLINK_SERIAL_NUMBER)
 
 # Erase the device
 .PHONY: erase
 erase:
-	nrfjprog --eraseall -f $(SOC_FAMILY)
+	nrfjprog --eraseall -f $(SOC_FAMILY) $(JLINK_SERIAL_NUMBER)

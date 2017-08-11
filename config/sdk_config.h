@@ -1650,7 +1650,7 @@
 // <q> CRC16_ENABLED  - crc16 - CRC16 calculation routines
 
 #ifndef CRC16_ENABLED
-#define CRC16_ENABLED 0
+#define CRC16_ENABLED 1
 #endif
 
 // <q> CRC32_ENABLED  - crc32 - CRC32 calculation routines
@@ -1668,12 +1668,12 @@
 // <e> FDS_ENABLED - fds - Flash data storage module
 //==========================================================
 #ifndef FDS_ENABLED
-#define FDS_ENABLED 0
+#define FDS_ENABLED 1
 #endif
 #if FDS_ENABLED
 // <o> FDS_OP_QUEUE_SIZE - Size of the internal queue.
 #ifndef FDS_OP_QUEUE_SIZE
-#define FDS_OP_QUEUE_SIZE 4
+#define FDS_OP_QUEUE_SIZE 6
 #endif
 
 // <o> FDS_CHUNK_QUEUE_SIZE - Determines how many @ref fds_record_chunk_t
@@ -1711,7 +1711,7 @@
 // <1024=> 1024
 
 #ifndef FDS_VIRTUAL_PAGE_SIZE
-#define FDS_VIRTUAL_PAGE_SIZE 256
+#define FDS_VIRTUAL_PAGE_SIZE 1024
 #endif
 
 #endif // FDS_ENABLED
@@ -1720,7 +1720,7 @@
 // <e> FSTORAGE_ENABLED - fstorage - Flash storage module
 //==========================================================
 #ifndef FSTORAGE_ENABLED
-#define FSTORAGE_ENABLED 0
+#define FSTORAGE_ENABLED 1
 #endif
 #if FSTORAGE_ENABLED
 // <o> FS_QUEUE_SIZE - Configures the size of the internal queue.

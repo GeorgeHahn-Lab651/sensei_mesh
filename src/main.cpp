@@ -8,6 +8,8 @@
 
 #include "app_cmd.h"
 #include "app_error.h"
+#include "app_timer.h"
+#include "app_util.h"
 #include "boards.h"
 #include "bsp.h"
 #include "bsp_btn_ble.h"
@@ -21,16 +23,10 @@
 #include "scheduler.h"
 #include "sensor.h"
 #include "serial_handler.h"
-#include "app_util.h"
-#include "app_timer.h"
 #include "softdevice_handler.h"
 #include "transport_control.h"
 
 #include "SEGGER_RTT.h"
-
-#define NRF_LOG_MODULE_NAME "main.c"
-#include "nrf_log.h"
-#include "nrf_log_ctrl.h"
 
 #if NORDIC_SDK_VERSION >= 11
 #include "nrf_nvic.h"
@@ -40,17 +36,15 @@
 #define MESH_INTERVAL_MIN_MS (100)
 
 #if NORDIC_SDK_VERSION >= 11
-  nrf_nvic_state_t nrf_nvic_state = {0};
-  
+nrf_nvic_state_t nrf_nvic_state = {0};
 
 /**< Clock source used by the                 \
      Softdevice.For calibrating timeslot      \
      time. */
-  static nrf_clock_lf_cfg_t clock_lf_cfg = NRF_CLOCK_LFCLKSRC;
-  #define MESH_CLOCK_SOURCE (clock_lf_cfg)
+static nrf_clock_lf_cfg_t clock_lf_cfg = NRF_CLOCK_LFCLKSRC;
+#define MESH_CLOCK_SOURCE (clock_lf_cfg)
 #else
-  #define MESH_CLOCK_SOURCE                                                      \
-    (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
+#define MESH_CLOCK_SOURCE (NRF_CLOCK_LFCLKSRC_XTAL_75_PPM)
 #endif
 
 /** @brief General error handler. */
@@ -60,12 +54,6 @@ static inline void error_loop(void) {
   while (true) {
     __WFE();
   }
-}
-
-static void log_init(void)
-{
-    ret_code_t err_code = NRF_LOG_INIT(NULL);
-    APP_ERROR_CHECK(err_code);
 }
 
 /**
@@ -122,7 +110,6 @@ static void sys_evt_dispatch(uint32_t sys_evt) {
 }
 
 void clock_initialization() {
-  NRF_LOG_DEBUG("Initialize: clock");
   NRF_CLOCK->LFCLKSRC = (CLOCK_LFCLKSRC_SRC_Xtal << CLOCK_LFCLKSRC_SRC_Pos);
   NRF_CLOCK->EVENTS_LFCLKSTARTED = 0;
   NRF_CLOCK->TASKS_LFCLKSTART = 1;
@@ -146,8 +133,6 @@ int main(void) {
 
   bsp_init(BSP_INIT_BUTTONS & BSP_INIT_LED, 0, 0);
 
-  log_init();
-
   SEGGER_RTT_WriteString(0, "Mesh control init\n");
   mesh_control_init();
 
@@ -159,9 +144,9 @@ int main(void) {
 #endif
 
   SEGGER_RTT_WriteString(0, "Enabling sd handler\n");
-  /* Enable Softdevice (including sd_ble before framework */
-  
-  // Initialize the SoftDevice handler module.
+/* Enable Softdevice (including sd_ble before framework */
+
+// Initialize the SoftDevice handler module.
 #if (NORDIC_SDK_VERSION >= 11)
   SOFTDEVICE_HANDLER_INIT(&MESH_CLOCK_SOURCE, NULL);
 #else
@@ -182,7 +167,6 @@ int main(void) {
 
 // Disable simblee's proximityMode
 #ifdef SIMBLEE
-  NRF_LOG_DEBUG("Initialize: Simblee radio");
   nrf_gpio_cfg_output(31);
   CLEAR_PIN(31);
 #endif
@@ -192,12 +176,11 @@ int main(void) {
   //   TOGGLE_LED(LED_GREEN);
   // }
 
-  NRF_LOG_DEBUG("Initialize: mesh");
   /* Initialize mesh. */
   rbc_mesh_init_params_t init_params;
   init_params.access_addr = MESH_ACCESS_ADDR;
   init_params.interval_min_ms = MESH_INTERVAL_MIN_MS;
-  init_params.channel = DEFAULT_MESH_CHANNEL;
+  init_params.channel = Config.DEFAULT_MESH_CHANNEL;
   init_params.lfclksrc = clock_lf_cfg; // MESH_CLOCK_SOURCE;
   init_params.tx_power = RBC_MESH_TXPOWER_0dBm;
 
@@ -208,9 +191,7 @@ int main(void) {
 
   // This has to come after rbc_mesh_init for some reason.  Otherwise we
   // get a HardFault when rbc_mesh_init is called
-  app_config_t app_config;
-  config_init();
-  get_config(&app_config);
+  Config.Init();
 
   // Setup handler for watching for heartbeat messages
   rbc_mesh_packet_peek_cb_set(packet_peek_cb);
@@ -220,22 +201,22 @@ int main(void) {
   //   tc_radio_params_set(MESH_ACCESS_ADDR, app_config.mesh_channel);
   // }
 
-  NRF_LOG_DEBUG("Initialize: heartbeat");
-  scheduler_init(app_config.sleep_enabled); // Initializes, but does not start, clock
-  heartbeat_init(DEFAULT_MESH_CHANNEL); // Inits structures for sending heartbeat
+  // Initializes, but does not start, clock
+  scheduler_init(Config.GetSleepEnabled());
+  // Inits structures for sending heartbeat
+  heartbeat_init(Config.DEFAULT_MESH_CHANNEL);
 
   /* Initialize mesh ACI */
   mesh_aci_init();
   mesh_aci_app_cmd_handler_set(app_cmd_handler);
 
   // Stop serial if serial is disabled
-  if (!app_config.serial_enabled) {
-    NRF_LOG_DEBUG("Disabling serial output");
+  if (!Config.GetSerialEnabled()) {
     serial_handler_stop();
   }
 
   /* Enable our handle */
-  if (app_config.sensor_id > 0) {
+  if (Config.GetSensorID() > 0) {
     sensor_init();
   }
 
