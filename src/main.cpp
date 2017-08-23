@@ -131,9 +131,9 @@ static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
 int main(void) {
 
 #if DEBUG == 1
-  log("Debug mode\n");
+  log("\nDebug mode");
 #else
-  log("Release mode\n");
+  log("\nRelease mode");
 #endif
 
   bsp_init(BSP_INIT_BUTTONS & BSP_INIT_LED, 0, 0);
@@ -157,7 +157,7 @@ int main(void) {
 #else
   SOFTDEVICE_HANDLER_INIT(MESH_CLOCK_SOURCE, NULL);
 #endif
-  SEGGER_RTT_WriteString(0, "Done enabling sd handler\n");
+  log("Done enabling sd handler");
   softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
 
   // clock_initialization();

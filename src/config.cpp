@@ -137,6 +137,9 @@ ret_code_t Config_t::update(uint8_t *data, uint8_t length) {
   record_chunk.p_data = data;
   record_chunk.length_words = length;
 
+  record.data.p_chunks = &record_chunk;
+  record.data.num_chunks = 1;
+
   // Important, make sure you zero init the ftok token
   fds_find_token_t ftok = {0};
 
@@ -165,10 +168,10 @@ ret_code_t Config_t::update(uint8_t *data, uint8_t length) {
       // is
       // copied for use elsewhere
 
-      err = fds_record_write(&record_desc, &record);
-    }
-    if (err != FDS_SUCCESS) {
-      return err;
+      err = fds_record_update(&record_desc, &record);
+      if (err != FDS_SUCCESS) {
+        return err;
+      }
     }
   }
 
