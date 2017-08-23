@@ -1,5 +1,6 @@
 {
     "editor.formatOnSave": true,
+    "editor.autoIndent": true,
     "files.associations": {
         "bsp.h": "c",
         "heartbeat.h": "c",

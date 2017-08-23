@@ -6,15 +6,22 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 
-#define log(msg) SEGGER_RTT_WriteString(0, msg "\n");
+#define log(msg)                                                               \
+  SEGGER_RTT_WriteString(0, __FILE__ ":" TOSTRING(__LINE__) "\t" msg "\n");
+#define logf(msg, ...)                                                         \
+  SEGGER_RTT_printf(0, __FILE__ ":" TOSTRING(__LINE__) "\t" msg "\n",          \
+                    __VA_ARGS__);
 
-#define APP_ASSERT_EQUAL(A, B, ...)                                            \
-  if (A != B) {                                                                \
-    SEGGER_RTT_printf(                                                         \
-        0, __FILE__                                                            \
-        ":" TOSTRING(__LINE__) "\n\texpected: %d actual: %d \n\t" __VA_ARGS__  \
-                               "\n",                                           \
-        B, A);                                                                 \
+// Assertion failed: file:line
+//     Message
+//     expected: x actual: y
+#define APP_ASSERT_EQUAL(actual, expected, ...)                                \
+  if (actual != expected) {                                                    \
+    SEGGER_RTT_printf(0,                                                       \
+                      "Assertion failed: " __FILE__                            \
+                      ":" TOSTRING(__LINE__) "\n\t" __VA_ARGS__                \
+                                             "\n\texpected: %d actual: %d\n",  \
+                      expected, actual);                                       \
   }
 
 #define APP_ASSERT(expr, ...)                                                  \
@@ -27,8 +34,10 @@
 // your production builds in mysterious ways
 #define APP_ASSERT(expr, ...)                                                  \
   {}
-#define APP_ASSERT_EQUAL(A, B, ...)                                            \
+#define APP_ASSERT_EQUAL(actual, expected, ...)                                \
   {}
 #define log(msg)                                                               \
+  {}
+#define logf(msg, ...)                                                         \
   {}
 #endif

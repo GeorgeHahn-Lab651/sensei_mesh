@@ -4,20 +4,8 @@
 #include "fstorage.h"
 #include "leds.h"
 #include "nrf_error.h"
+#include "section_vars.h"
 #include <string.h>
-
-// NRF_SECTION_VARS_REGISTER_SECTION(fs_data);
-// NRF_SECTION_VARS_REGISTER_SYMBOLS(fs_config_t, fs_data);
-
-// // This macro is expected to be invoked in the code unit that requires
-// // flash storage. Invoking this places the registered configuration variable
-// // in a section named "fs_data" that the FStorage module uses during
-// // initialization and regular operation.
-// #define FS_SECTION_VARS_ADD(type_def) NRF_SECTION_VARS_ADD(fs_data, type_def)
-
-// FS_SECTION_VARS_ADD(const fs_config_t fs_config) = {.cb = &fs_callback,
-//                                                     .num_pages =
-//                                                     FDS_MAX_PAGES};
 
 volatile bool gc_complete;
 volatile bool write_complete;
@@ -29,14 +17,16 @@ static void fds_event_handler(fds_evt_t const *const p_fds_evt) {
   switch (p_fds_evt->id) {
   case FDS_EVT_INIT:
     if (p_fds_evt->result != FDS_SUCCESS) {
-      // Initialization failed.
+      log("initialization failed");
     }
     break;
   case FDS_EVT_WRITE:
     write_complete = true;
+    log("write complete");
     break;
   case FDS_EVT_GC:
     gc_complete = true;
+    log("gc complete");
     break;
   default:
     break;
@@ -51,6 +41,8 @@ ret_code_t Config_t::write(uint8_t *data, uint8_t length) {
   APP_ASSERT(
       length * 4 < (FDS_VIRTUAL_PAGE_SIZE * 4) - 14,
       "Data length must not exceed FDS_VIRTUAL_PAGE_SIZE words minus 14 bytes");
+
+  logf("Config length: %d", length);
 
   // Set up data.
   record_chunk.p_data = data;
@@ -67,6 +59,7 @@ ret_code_t Config_t::write(uint8_t *data, uint8_t length) {
   write_complete = false;
   ret_code_t ret = fds_record_write(&record_desc, &record);
   if (ret == FDS_ERR_NO_SPACE_IN_FLASH) {
+    log("Performing a flash garbage collection operation");
     // We're all out of space; run garbage collection
     // (this may take a while)
     gc_complete = false;
@@ -129,6 +122,7 @@ bool Config_t::read() {
 }
 
 ret_code_t Config_t::update(uint8_t *data, uint8_t length) {
+  log("update()");
   fds_record_t record;
   fds_record_desc_t record_desc;
   fds_record_chunk_t record_chunk;
@@ -200,10 +194,11 @@ bool Config_t::loadIfNotLoaded() {
 }
 
 bool Config_t::save() {
+  log("save()");
   // Since our backing struct doesn't move around, we can just queue up this
   // update (without waiting for the callback to fire)
   auto ret = update(reinterpret_cast<uint8_t *>(&backing_struct),
-                    sizeof(app_config_t));
+                    sizeof(app_config_t) / 4);
   APP_ASSERT_EQUAL(ret, NRF_SUCCESS, "Config.save() unsuccessful");
   return ret == NRF_SUCCESS;
 }
@@ -218,11 +213,13 @@ bool Config_t::Init() {
 
   ret_code_t ret = fds_register(fds_event_handler);
   if (ret != FDS_SUCCESS) {
+    log("fds_register() failed");
     return false;
   }
   ret = fds_init();
 
   if (ret != NRF_SUCCESS) {
+    log("fds_init() failed");
     return false;
   }
 

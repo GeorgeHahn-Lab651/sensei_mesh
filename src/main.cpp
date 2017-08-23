@@ -26,7 +26,7 @@
 #include "softdevice_handler.h"
 #include "transport_control.h"
 
-#include "SEGGER_RTT.h"
+#include "assert.h"
 
 #if NORDIC_SDK_VERSION >= 11
 #include "nrf_nvic.h"
@@ -65,13 +65,13 @@ static inline void error_loop(void) {
 */
 void sd_assert_handler(uint32_t pc, uint16_t line_num,
                        const uint8_t *p_file_name) {
-  SEGGER_RTT_WriteString(0, "sd_assert_handler (looping forever)\n");
+  log("sd_assert_handler (looping forever)");
   error_loop();
 }
 
 /** @brief Hardware fault handler. */
 void HardFault_Handler(void) {
-  SEGGER_RTT_WriteString(0, "HardFault_Handler (looping forever)\n");
+  log("HardFault_Handler (looping forever)");
   error_loop();
 }
 
@@ -105,8 +105,8 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t *p_evt) {
 
 /* dispatch system events to interested modules. */
 static void sys_evt_dispatch(uint32_t sys_evt) {
-  // pstorage_sys_event_handler(sys_evt);
   // ble_advertising_on_sys_evt(sys_evt);
+  fs_sys_event_handler(sys_evt);
 }
 
 void clock_initialization() {
@@ -129,21 +129,26 @@ static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
 }
 
 int main(void) {
-  SEGGER_RTT_WriteString(0, "\nmain()\n");
+
+#if DEBUG == 1
+  log("Debug mode\n");
+#else
+  log("Release mode\n");
+#endif
 
   bsp_init(BSP_INIT_BUTTONS & BSP_INIT_LED, 0, 0);
 
-  SEGGER_RTT_WriteString(0, "Mesh control init\n");
+  log("Mesh control init");
   mesh_control_init();
 
 #if LEDS_NUMBER > 0
-  SEGGER_RTT_WriteString(0, "Some LEDs\n");
+  log("Some LEDs");
   nrf_gpio_cfg_output(LED_START + LED_GREEN);
   nrf_gpio_cfg_output(LED_START + LED_RED);
   nrf_gpio_cfg_output(LED_START + LED_BLUE);
 #endif
 
-  SEGGER_RTT_WriteString(0, "Enabling sd handler\n");
+  log("Enabling sd handler");
 /* Enable Softdevice (including sd_ble before framework */
 
 // Initialize the SoftDevice handler module.
@@ -165,6 +170,7 @@ int main(void) {
 // nrf_gpio_cfg_output(5);
 // nrf_gpio_cfg_output(6);
 
+// TODO: Move this to HAL init function
 // Disable simblee's proximityMode
 #ifdef SIMBLEE
   nrf_gpio_cfg_output(31);
@@ -238,7 +244,7 @@ int main(void) {
   //   __WFE();
   // }
 
-  SEGGER_RTT_WriteString(0, "Main loop\n");
+  log("Main loop");
   rbc_mesh_event_t evt;
   while (true) {
     if (rbc_mesh_event_get(&evt) == NRF_SUCCESS) {
