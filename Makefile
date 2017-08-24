@@ -226,7 +226,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 
 # source common to all targets
 
-C_SOURCE_FILES += src/proximity.c src/battery.c src/shoe_accel.c \
+C_SOURCE_FILES += src/proximity.c src/battery.c src/shoe_accel.c src/power_manage.c \
 	src/app_evt.c src/mesh_control.c bsp/bsp.c src/i2c.c src/jostle_detect.c
 CXX_SOURCE_FILES += src/config.cpp src/main.cpp src/sensor.cpp src/app_cmd.cpp \
 	src/scheduler.cpp src/heartbeat.cpp
@@ -272,6 +272,8 @@ C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/gpiote/nrf_drv_gpiote.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/common/nrf_drv_common.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/uart/nrf_drv_uart.c
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/clock/nrf_drv_clock.c
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/saadc/nrf_drv_saadc.c
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/hal/nrf_saadc.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_util_platform.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error.c
 C_SOURCE_FILES += $(COMPONENTS)/libraries/util/app_error_weak.c
@@ -319,7 +321,7 @@ OUTPUT_BINARY_DIRECTORY = $(OBJECT_DIRECTORY)
 BUILD_DIRECTORIES := $(sort $(OBJECT_DIRECTORY) $(OUTPUT_BINARY_DIRECTORY) $(LISTING_DIRECTORY) )
 
 ifeq ($(BUILD_TYPE),debug)
-  DEBUG_FLAGS += -DDEBUG=1 -g -O0 -ggdb
+  DEBUG_FLAGS += -DDEBUG=1 -g -O0 -ggdb -DJLINK_SN=$(JLINK_SN)
 
   # Generate assembly listings
   COMMON_FLAGS += -Wa,-adhln
@@ -383,20 +385,20 @@ OBJECTS = $(CXX_OBJECTS) $(C_OBJECTS) $(ASM_OBJECTS) $(ARDUINO_CORE)
 
 all: $(BUILD_DIRECTORIES) $(OBJECTS) $(OUTPUT_BINARY_DIRECTORY)/$(OUTPUT_NAME).elf echosize
 	@echo "*****************************************************"
-	@echo "build project: $(OUTPUT_NAME)"
-	@echo "build type:    $(BUILD_TYPE)"
-	@echo "build with:    $(TOOLCHAIN_BASE)"
-	@echo "build target:  $(TARGET_BOARD)"
-	@echo "build options  --"
-	@echo "USE_DFU        $(USE_DFU)"
-	@echo "build products --"
-	@echo "               $(OUTPUT_NAME).elf"
-	@echo "               $(OUTPUT_NAME).hex"
+	@echo "build project:   $(OUTPUT_NAME)"
+	@echo "build type:      $(BUILD_TYPE)"
+	@echo "build with:      $(TOOLCHAIN_BASE)"
+	@echo "build target:    $(TARGET_BOARD)"
+	@echo "build directory: $(OBJECT_DIRECTORY)"
+	@echo "build options    --"
+	@echo "USE_DFU          $(USE_DFU)"
+	@echo "build products   --"
+	@echo "                 $(OUTPUT_NAME).elf"
+	@echo "                 $(OUTPUT_NAME).hex"
 	@echo "*****************************************************"
 
 # Create build directories
 $(BUILD_DIRECTORIES):
-	echo $(MAKEFILE_NAME)
 	$(MK) $@
 
 # Create objects from C SRC files
@@ -492,6 +494,7 @@ cleanobj:
 .PHONY: configure
 configure:
 	./pyaci/configure_sensor.py $(SENSOR_CONFIGURATION_OPTIONS) -d $(SERIAL_PORT) $(SENSOR_ID)
+	$(NO_ECHO)nrfjprog -r -f NRF52 $(JLINK_SERIAL_NUMBER)
 
 # High level commands
 .PHONY: nrf51

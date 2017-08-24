@@ -10,6 +10,7 @@
 #include "app_error.h"
 #include "app_timer.h"
 #include "app_util.h"
+#include "battery.h"
 #include "boards.h"
 #include "bsp.h"
 #include "bsp_btn_ble.h"
@@ -19,7 +20,7 @@
 #include "leds.h"
 #include "mesh_control.h"
 #include "nrf_gpio.h"
-#include "pstorage_platform.h"
+#include "power_manage.h"
 #include "scheduler.h"
 #include "sensor.h"
 #include "serial_handler.h"
@@ -30,6 +31,8 @@
 
 #if NORDIC_SDK_VERSION >= 11
 #include "nrf_nvic.h"
+#else
+#include "pstorage_platform.h"
 #endif
 
 #define MESH_ACCESS_ADDR (0xA555410C)
@@ -52,7 +55,7 @@ static inline void error_loop(void) {
   TOGGLE_LED(LED_RED);
   __disable_irq();
   while (true) {
-    __WFE();
+    power_manage();
   }
 }
 
@@ -105,7 +108,6 @@ static void rbc_mesh_event_handler(rbc_mesh_event_t *p_evt) {
 
 /* dispatch system events to interested modules. */
 static void sys_evt_dispatch(uint32_t sys_evt) {
-  // ble_advertising_on_sys_evt(sys_evt);
   fs_sys_event_handler(sys_evt);
 }
 
@@ -131,7 +133,11 @@ static void packet_peek_cb(rbc_mesh_packet_peek_params_t *params) {
 int main(void) {
 
 #if DEBUG == 1
+#ifdef JLINK_SN
+  log("\nDebug mode (Programmed with JLink " TOSTRING(JLINK_SN) ")");
+#else
   log("\nDebug mode");
+#endif
 #else
   log("\nRelease mode");
 #endif
@@ -160,15 +166,8 @@ int main(void) {
   log("Done enabling sd handler");
   softdevice_ble_evt_handler_set(rbc_mesh_ble_evt_handler);
 
-  // clock_initialization();
-  // sd_softdevice_disable();
-
   // Register with the SoftDevice handler module for system events.
   softdevice_sys_evt_handler_set(sys_evt_dispatch);
-
-// Debug pins
-// nrf_gpio_cfg_output(5);
-// nrf_gpio_cfg_output(6);
 
 // TODO: Move this to HAL init function
 // Disable simblee's proximityMode
@@ -199,6 +198,9 @@ int main(void) {
   // get a HardFault when rbc_mesh_init is called
   Config.Init();
 
+  // Initialize battery ADC
+  battery_init();
+
   // Setup handler for watching for heartbeat messages
   rbc_mesh_packet_peek_cb_set(packet_peek_cb);
 
@@ -224,25 +226,17 @@ int main(void) {
   /* Enable our handle */
   if (Config.GetSensorID() > 0) {
     sensor_init();
+  } else {
+    log("WARNING: Sensor ID not set");
   }
+
+  logf("Battery is %d percent", (int)(get_battery_adc() / 2.56));
 
   error_code = rbc_mesh_value_enable(MESH_CONTROL_HANDLE);
   APP_ERROR_CHECK(error_code);
 
-  // error_code = rbc_mesh_value_enable(TEST_LED_HANDLE);
-  // APP_ERROR_CHECK(error_code);
-
   // Start clock
   start_clock(0);
-
-  // rbc_mesh_stop();
-  // rbc_mesh_start();
-  // sd_app_evt_wait();
-  // while(1) {
-  //   __WFE();
-  //   __SEV();
-  //   __WFE();
-  // }
 
   log("Main loop");
   rbc_mesh_event_t evt;

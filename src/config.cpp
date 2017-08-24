@@ -7,6 +7,9 @@
 #include "section_vars.h"
 #include <string.h>
 
+// TODO: Does this work on SDK8? (May need to port the pstorage code into this
+// module)
+
 volatile bool gc_complete;
 volatile bool write_complete;
 

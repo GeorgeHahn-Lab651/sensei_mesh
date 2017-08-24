@@ -1,5 +1,6 @@
 
 #include "sensor.h"
+#include "assert.h"
 #include "battery.h"
 #include "boards.h"
 #include "config.h"
@@ -14,6 +15,7 @@
 static sensor_value_t m_value;
 
 void sensor_init() {
+  log("sensor_init");
 #ifdef ACCEL_ADXL337
   shoe_accel_init();
 #endif
