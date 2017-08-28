@@ -1271,7 +1271,7 @@
 // <e> TWIS_ENABLED - nrf_drv_twis - TWIS peripheral driver
 //==========================================================
 #ifndef TWIS_ENABLED
-#define TWIS_ENABLED 1
+#define TWIS_ENABLED 0
 #endif
 #if TWIS_ENABLED
 // <o> TWIS_DEFAULT_CONFIG_ADDR0 - Address0
@@ -1362,6 +1362,7 @@
 #define TWI_ENABLED 1
 #endif
 #if TWI_ENABLED
+
 // <o> TWI_DEFAULT_CONFIG_FREQUENCY  - Frequency
 
 // <26738688=> 100k

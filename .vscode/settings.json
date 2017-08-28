@@ -38,6 +38,7 @@
         "sdk_config.h": "c",
         "app_cmd.h": "c",
         "app_timer.h": "c",
-        "segger_rtt.h": "c"
+        "segger_rtt.h": "c",
+        "i2c.h": "c"
     }
 }

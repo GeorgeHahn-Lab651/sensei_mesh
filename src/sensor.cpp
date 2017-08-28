@@ -71,5 +71,6 @@ void report_sensor_data() {
     APP_ERROR_CHECK(error_code);
   } else {
     // Would be nice to report this somewhere.
+    log("WARNING: Not reporting sensor data; sensor ID not set");
   }
 }

@@ -1,7 +1,3 @@
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 
 #include "mesh_aci.h"
 #include "rbc_mesh.h"
@@ -26,6 +22,10 @@
 #include "serial_handler.h"
 #include "softdevice_handler.h"
 #include "transport_control.h"
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "assert.h"
 
@@ -228,6 +228,7 @@ int main(void) {
     sensor_init();
   } else {
     log("WARNING: Sensor ID not set");
+    sensor_init();
   }
 
   logf("Battery is %d percent", (int)(get_battery_adc() / 2.56));
