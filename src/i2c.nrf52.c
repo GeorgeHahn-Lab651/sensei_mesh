@@ -4,6 +4,8 @@
 
 #ifdef NRF52
 
+#define DISABLE_LOGGING_IN_FILE
+
 #include "app_error.h"
 #include "assert.h"
 #include "i2c.h"
@@ -25,7 +27,6 @@ void i2c_init() {
   err_code = nrf_drv_twi_init(&twi, &config, NULL, NULL);
   APP_ERROR_CHECK(err_code);
 
-  // TODO: Probably need to disable this when idle to save power
   nrf_drv_twi_enable(&twi);
 }
 
@@ -40,12 +41,16 @@ bool i2c_read_data(uint8_t address, uint8_t reg, uint8_t *data, uint8_t len) {
     data[i] = 0;
   }
 
-  while (err_code != 0) {
-    err_code = nrf_drv_twi_tx(&twi, address, &reg, 1, true);
-    err_code = nrf_drv_twi_rx(&twi, address, data, len);
+  err_code = nrf_drv_twi_tx(&twi, address, &reg, 1, true);
+  if (err_code != NRF_SUCCESS) {
+    return false;
   }
 
-  return err_code == NRF_SUCCESS;
+  err_code = nrf_drv_twi_rx(&twi, address, data, len);
+  if (err_code != NRF_SUCCESS) {
+    return false;
+  }
+  return true;
 }
 
 // read the i2c register at the given address (see table 13 in the LSM9DS0 spec)
@@ -77,6 +82,11 @@ bool i2c_write_reg(uint8_t address, uint8_t reg, uint8_t value) {
   APP_ERROR_CHECK(err_code);
 
   return err_code == NRF_SUCCESS;
+}
+
+void i2c_shutdown() {
+  nrf_drv_twi_disable(&twi);
+  nrf_drv_twi_uninit(&twi);
 }
 
 /*lint --flb "Leave library region" */

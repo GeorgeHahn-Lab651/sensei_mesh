@@ -51,9 +51,13 @@ static uint8_t read_register(uint8_t reg) {
 
 // Motion interrupt pin handler
 void motion_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
-  read_register(MMA8451_REG_FF_MT_SRC);
-  jostle_detected = true;
   log("jostle detected");
+  // i2c_init();
+  // Read interrupt source register (clears interrupt)
+  read_register(MMA8451_REG_FF_MT_SRC);
+  // i2c_shutdown();
+
+  jostle_detected = true;
 }
 
 void jostle_detect_init() {
@@ -75,8 +79,11 @@ void jostle_detect_init() {
   // Configure mma8451
   write_register(MMA8451_REG_CTRL_REG2, 0x40); // reset
 
-  // TODO: This pattern isn't great because it means you can't do error checking
-  while (read_register(MMA8451_REG_CTRL_REG2) & 0x40)
+  uint8_t data = 0;
+
+  while (!i2c_read_data(MMA8451_DEFAULT_ADDRESS, MMA8451_REG_CTRL_REG2, &data,
+                        1) ||
+         data & 0x40)
     ;
 
   // enable 4G range
@@ -105,6 +112,9 @@ void jostle_detect_init() {
   // F_READ = normal
   // ACTIVE = active
   write_register(MMA8451_REG_CTRL_REG1, 0b00100101);
+
+  // Save power after configuring accelerometer
+  // i2c_shutdown();
 }
 
 bool jostle_detect_get_flag() { return jostle_detected; }

@@ -39,6 +39,7 @@
         "app_cmd.h": "c",
         "app_timer.h": "c",
         "segger_rtt.h": "c",
-        "i2c.h": "c"
+        "i2c.h": "c",
+        "assert.h": "c"
     }
 }

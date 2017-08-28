@@ -1,6 +1,6 @@
 // Print assertion messages over Segger RTT in debug builds
 
-#if DEBUG == 1
+#if DEBUG == 1 && !defined(DISABLE_LOGGING_IN_FILE)
 #include "SEGGER_RTT.h"
 
 #define STRINGIFY(x) #x
