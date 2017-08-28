@@ -52,10 +52,11 @@ static uint8_t read_register(uint8_t reg) {
 // Motion interrupt pin handler
 void motion_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
   log("jostle detected");
-  // i2c_init();
+
+  i2c_init();
   // Read interrupt source register (clears interrupt)
   read_register(MMA8451_REG_FF_MT_SRC);
-  // i2c_shutdown();
+  i2c_shutdown();
 
   jostle_detected = true;
 }
@@ -114,7 +115,7 @@ void jostle_detect_init() {
   write_register(MMA8451_REG_CTRL_REG1, 0b00100101);
 
   // Save power after configuring accelerometer
-  // i2c_shutdown();
+  i2c_shutdown();
 }
 
 bool jostle_detect_get_flag() { return jostle_detected; }
