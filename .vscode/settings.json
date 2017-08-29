@@ -40,6 +40,10 @@
         "app_timer.h": "c",
         "segger_rtt.h": "c",
         "i2c.h": "c",
-        "assert.h": "c"
+        "assert.h": "c",
+        "event_handler.h": "c",
+        "timer.h": "c",
+        "stdint.h": "c",
+        "jostle_detect.h": "c"
     }
 }
