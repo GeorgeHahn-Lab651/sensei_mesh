@@ -7,6 +7,7 @@
 #include "assert.h"
 #include "i2c.h"
 #include "nrf_drv_gpiote.h"
+#include "rtc.h"
 
 #define MMA8451_DEFAULT_ADDRESS (0x1C) // if A is GND, it's 0x1C
 
@@ -49,8 +50,11 @@ static uint8_t read_register(uint8_t reg) {
   return i2c_read_reg(MMA8451_DEFAULT_ADDRESS, reg);
 }
 
+volatile uint32_t last_jostle;
+
 // Motion interrupt pin handler
 void motion_handler(nrf_drv_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
+  last_jostle = rtc_value();
   log("jostle detected");
 
   i2c_init();

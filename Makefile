@@ -128,10 +128,12 @@ INC_BOTH += -I$(COMPONENTS)/libraries/experimental_section_vars
 INC_BOTH += -I$(COMPONENTS)/drivers_nrf/saadc
 INC_BOTH += -I$(COMPONENTS)/drivers_nrf/ppi
 INC_BOTH += -I$(COMPONENTS)/drivers_nrf/timer
+INC_BOTH += -I$(COMPONENTS)/drivers_nrf/rtc
 INC_BOTH += -I$(COMPONENTS)/drivers_nrf/uart
 INC_BOTH += -I$(COMPONENTS)/drivers_nrf/twi_master
 
 C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/twi_master/nrf_drv_twi.c
+C_SOURCE_FILES += $(COMPONENTS)/drivers_nrf/rtc/nrf_drv_rtc.c
 
 INC_BOTH += -I$(COMPONENTS)/libraries/fds
 INC_BOTH += -I$(COMPONENTS)/libraries/fstorage
@@ -229,7 +231,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 # source common to all targets
 
 C_SOURCE_FILES += src/proximity.c src/battery.c src/shoe_accel.c src/power_manage.c \
-	src/app_evt.c src/mesh_control.c bsp/bsp.c src/jostle_detect.c
+	src/app_evt.c src/mesh_control.c bsp/bsp.c src/jostle_detect.c src/rtc.c
 CXX_SOURCE_FILES += src/config.cpp src/main.cpp src/sensor.cpp src/app_cmd.cpp \
 	src/scheduler.cpp src/heartbeat.cpp
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c

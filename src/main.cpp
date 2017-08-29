@@ -13,10 +13,12 @@
 #include "config.h"
 #include "handles.h"
 #include "heartbeat.h"
+#include "jostle_detect.h"
 #include "leds.h"
 #include "mesh_control.h"
 #include "nrf_gpio.h"
 #include "power_manage.h"
+#include "rtc.h"
 #include "scheduler.h"
 #include "sensor.h"
 #include "serial_handler.h"
@@ -34,6 +36,8 @@
 #else
 #include "pstorage_platform.h"
 #endif
+
+const uint32_t INACTIVITY_THRESHOLD_SECONDS = 30 * 60;
 
 #define MESH_ACCESS_ADDR (0xA555410C)
 #define MESH_INTERVAL_MIN_MS (100)
@@ -190,6 +194,7 @@ int main(void) {
   init_params.tx_power = RBC_MESH_TXPOWER_0dBm;
 
   uint32_t error_code;
+
   error_code = rbc_mesh_init(init_params);
   APP_ERROR_CHECK(error_code);
   // led_config(LED_GREEN, 1);
@@ -238,14 +243,41 @@ int main(void) {
 
   // Start clock
   start_clock(0);
+  rtc_init();
 
   log("Main loop");
   rbc_mesh_event_t evt;
+  bool mesh_running = true;
   while (true) {
     if (rbc_mesh_event_get(&evt) == NRF_SUCCESS) {
       rbc_mesh_event_handler(&evt);
       rbc_mesh_event_release(&evt);
     }
     sd_app_evt_wait();
+
+    // Check time-of-last-jostle timer and go back to sleep if it's over ~30 min
+    uint32_t time = rtc_value();
+    logf("Time since last jostle: %d", rtc_to_walltime(time - last_jostle));
+    auto idle =
+        rtc_to_walltime(time - last_jostle) > INACTIVITY_THRESHOLD_SECONDS;
+    if (mesh_running && idle) {
+      log("Stopping mesh");
+      // Go to sleep if the last jostle was INACTIVITY_THRESHOLD_SECONDS ms
+      // ago
+      rbc_mesh_stop();
+      mesh_running = false;
+
+      // Go to system-off mode (this function will not return; wakeup will
+      // cause a reset).
+
+      // err_code = sd_power_system_off();
+      // APP_ERROR_CHECK(err_code);
+    }
+    if (!idle && !mesh_running) {
+      log("Starting mesh");
+      // Wake the mesh on jostle
+      rbc_mesh_start();
+      mesh_running = true;
+    }
   }
 }
