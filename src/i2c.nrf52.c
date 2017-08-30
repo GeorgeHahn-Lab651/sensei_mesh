@@ -1,7 +1,3 @@
-/* Copyright (c) 2013 Microsoft Corporation. All Rights Reserved.
- *
- */
-
 #ifdef NRF52
 
 #define DISABLE_LOGGING_IN_FILE

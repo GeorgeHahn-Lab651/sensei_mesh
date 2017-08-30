@@ -1,7 +1,3 @@
-/* Copyright (c) 2013 Microsoft Corporation. All Rights Reserved.
- *
- */
-
 #ifdef NRF51
 
 #include "i2c.h"
