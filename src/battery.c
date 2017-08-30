@@ -47,14 +47,11 @@ uint8_t get_battery_adc() {
 
   return val;
 }
-
-void battery_init() {}
 #endif
 
 #ifdef NRF51
 #include "nrf_adc.h"
 
-void battery_init() {}
 uint8_t get_battery_adc() {
   uint8_t res;
   // Configure ADC

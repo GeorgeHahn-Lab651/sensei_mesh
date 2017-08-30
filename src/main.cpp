@@ -1,4 +1,3 @@
-
 #include "mesh_aci.h"
 #include "rbc_mesh.h"
 
@@ -202,9 +201,6 @@ int main(void) {
   // This has to come after rbc_mesh_init for some reason.  Otherwise we
   // get a HardFault when rbc_mesh_init is called
   Config.Init();
-
-  // Initialize battery ADC
-  battery_init();
 
   // Setup handler for watching for heartbeat messages
   rbc_mesh_packet_peek_cb_set(packet_peek_cb);
