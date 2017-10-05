@@ -5,6 +5,7 @@
 
 #include "app_error.h"
 #include "assert.h"
+#include "bsp.h"
 #include "i2c.h"
 #include "nrf_drv_gpiote.h"
 #include "rtc.h"
@@ -28,9 +29,6 @@
 
 #define INT_EN_FF_MT (1 << 2)
 #define INT_EN_PULSE (1 << 3)
-
-#define INT1_GPIO_PIN 24
-#define INT2_GPIO_PIN 22
 
 static bool jostle_detected;
 

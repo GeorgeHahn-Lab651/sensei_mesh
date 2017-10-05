@@ -1,5 +1,5 @@
-
 #include "mesh_control.h"
+#include "assert.h"
 #include "leds.h"
 #include "transport_control.h"
 
@@ -23,9 +23,9 @@ void mesh_control_update_config(mesh_control_t *new_config) {
 
   // Sanity checks
   if (new_config->wake_interval == 0 || new_config->wake_interval > 1000) {
-    log("Bad config: new_config->wake_interval=%d out of acceptable range "
-        "(1-1000)",
-        new_config->wake_interval);
+    logf("Bad config: new_config->wake_interval=%d out of acceptable range "
+         "(1-1000)",
+         new_config->wake_interval);
     return;
   }
 

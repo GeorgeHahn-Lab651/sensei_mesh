@@ -4,6 +4,7 @@
 
 #include "app_error.h"
 #include "assert.h"
+#include "bsp.h"
 #include "i2c.h"
 #include "nrf_drv_twi.h"
 #include <stdbool.h>
@@ -16,8 +17,9 @@ void i2c_init() {
   ret_code_t err_code;
 
   nrf_drv_twi_config_t config = NRF_DRV_TWI_DEFAULT_CONFIG;
-  config.sda = 26;
-  config.scl = 27;
+
+  config.sda = ARDUINO_SDA_PIN;
+  config.scl = ARDUINO_SCL_PIN;
   config.frequency = TWI_FREQUENCY_FREQUENCY_K400;
 
   err_code = nrf_drv_twi_init(&twi, &config, NULL, NULL);

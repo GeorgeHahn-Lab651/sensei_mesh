@@ -249,7 +249,7 @@ int main(void) {
       rbc_mesh_event_handler(&evt);
       rbc_mesh_event_release(&evt);
     }
-    sd_app_evt_wait();
+    power_manage();
 
     // Check time-of-last-jostle timer and go back to sleep if it's over ~30 min
     uint32_t time = rtc_value();

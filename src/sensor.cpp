@@ -70,7 +70,6 @@ void report_sensor_data() {
                            (uint8_t *)&m_value, sizeof(sensor_value_t));
     APP_ERROR_CHECK(error_code);
   } else {
-    // Would be nice to report this somewhere.
     log("WARNING: Not reporting sensor data; sensor ID not set");
   }
 }

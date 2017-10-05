@@ -231,7 +231,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 # source common to all targets
 
 C_SOURCE_FILES += src/proximity.c src/battery.c src/shoe_accel.c src/power_manage.c \
-	src/app_evt.c src/mesh_control.c bsp/bsp.c src/jostle_detect.c src/rtc.c
+	src/app_evt.c src/mesh_control.c bsp/bsp.c src/jostle_detect.mma8541.c src/jostle_detect.bmx055.c src/rtc.c
 CXX_SOURCE_FILES += src/config.cpp src/main.cpp src/sensor.cpp src/app_cmd.cpp \
 	src/scheduler.cpp src/heartbeat.cpp
 C_SOURCE_FILES += $(COMPONENTS)/libraries/timer/app_timer.c

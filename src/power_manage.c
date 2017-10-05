@@ -1,4 +1,8 @@
-#include "power_manage.h"
-#include "nrf.h"
 
-void power_manage() { __WFE(); }
+#include "power_manage.h"
+#include "transport_control.h"
+
+void power_manage() {
+  sd_app_evt_wait();
+  //__WFE();
+}
